@@ -1,0 +1,164 @@
+/* ===== LOGIN PAGE ===== */
+.login-page {
+  padding: 3rem 1rem;
+}
+
+.login-page__container {
+  display: flex;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+  overflow: hidden;
+  min-height: 80vh;
+}
+
+.login-page__hero {
+  flex: 1;
+  position: relative;
+  background-image: url('/login-hero.jpg');
+  background-size: cover;       /* cover the entire div */
+  background-position: center;  /* center the image */
+  display: flex;
+  align-items: flex-end;      /* text at top */
+  justify-content: center;
+  padding: 3rem 2rem;
+  color: #fff;                  /* text color */
+  min-height: 100%;
+}
+
+.login-page__hero-overlay {
+  position: relative;
+  z-index: 2;
+  text-align: left;             /* left-align text */
+  max-width: 300px;
+}
+
+.login-page__hero-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5); /* text stands out */
+}
+
+.login-page__hero-subtitle {
+  font-size: 1rem;
+  line-height: 1.5;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* Optional: overlay gradient for readability */
+.login-page__hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, rgba(0,0,0,0.3), rgba(0,0,0,0.3));
+  z-index: 1;
+}
+
+/* ===== FORM RIGHT ===== */
+.login-page__form-wrapper {
+  flex: 1;
+  padding: 3rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 360px;
+}
+
+.login-form__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.login-form__error {
+  background-color: #ffe5e5;
+  color: #d9534f;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.login-form__field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.login-form__input {
+  margin-top: 0.3rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+}
+
+.login-form__input:focus {
+  border-color: #6b4eff;
+  box-shadow: 0 0 6px rgba(107, 78, 255, 0.25);
+  outline: none;
+}
+
+.login-form__actions {
+  margin-top: 1.5rem;
+}
+
+.login-form__btn {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.login-form__btn--primary {
+  background-color: #222;
+  color: #fff;
+}
+
+.login-form__btn--primary:hover {
+  background-color: #7a7d9c;
+}
+
+.login-form__switch {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  text-align: center;
+  color: #7a7d9c;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .login-page__container {
+    flex-direction: column;
+  }
+
+  .login-page__hero {
+    padding: 2rem 1.5rem;
+  }
+
+  .login-page__form-wrapper {
+    padding: 2rem 1.5rem;
+  }
+
+  .login-page__hero-img {
+    max-width: 180px;
+  }
+}
+
+/* FADE-IN ANIMATION */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
