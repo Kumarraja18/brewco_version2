@@ -4,7 +4,8 @@
 The admin dashboard includes an email notification system that automatically sends login credentials to users when their registration is approved.
 
 ## Prerequisites
-- Gmail account (you're using: v.kumarraja2018@gmail.com)
+- Gmail account
+
 - Google 2-Step Verification enabled
 - Gmail App Password generated
 
@@ -39,8 +40,8 @@ The admin dashboard includes an email notification system that automatically sen
 # Email Configuration (SMTP)
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
-spring.mail.username=v.kumarraja2018@gmail.com
-spring.mail.password=your-app-password-here
+spring.mail.username=${MAIL_USERNAME}
+spring.mail.password=${MAIL_PASSWORD}
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 spring.mail.properties.mail.smtp.starttls.required=true
@@ -133,8 +134,8 @@ Brew & Co Admin Team
 ### Test 2: Approve the User as Admin
 
 1. Login as admin: http://localhost:5173/login
-   - Email: `v.kumarraja2018@gmail.com`
-   - Password: `kumar0237`
+   - Email: `admin@example.com` (from your .env file)
+   - Password: `your_admin_password` (from your .env file)
 2. You'll see the pending user in the "Projects" section
 3. Click **"View"** to see full details
 4. Click **"Approve & Send Password"**
@@ -143,7 +144,7 @@ Brew & Co Admin Team
 ### Test 3: Check Email
 
 1. Check the registered user's email inbox
-2. Look for the approval email from `v.kumarraja2018@gmail.com`
+2. Look for the approval email from your configured admin email
 3. Use the credentials to login
 
 ---
@@ -206,7 +207,7 @@ spring.mail.password=${MAIL_PASSWORD}
 
 Then set them in your deployment environment:
 ```bash
-export MAIL_USERNAME=v.kumarraja2018@gmail.com
+export MAIL_USERNAME=your-email@gmail.com
 export MAIL_PASSWORD=your-app-password
 ```
 

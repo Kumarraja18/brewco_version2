@@ -55,13 +55,12 @@ Frontend will be available at: `http://localhost:5173`
 
 ## 🗄️ Database Configuration
 
-The application uses MySQL with the following configuration:
-- **Database**: `brewco_db`
-- **Host**: `localhost:3306`
-- **Username**: `root`
-- **Password**: `kumar0237`
+The application uses MySQL. Configure credentials via environment variables:
 
-Configuration file: `backend/src/main/resources/application.properties`
+1. Copy the environment template: `cp .env.example .env`
+2. Fill in your credentials in `.env`
+
+Configuration file: `backend/src/main/resources/application.properties` (reads from env vars)
 
 ## 🔧 API Endpoints
 

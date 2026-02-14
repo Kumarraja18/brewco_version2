@@ -1,63 +1,60 @@
 #!/bin/bash
 
-# Brew & Co - Complete Startup Script
+# Brew & Co - Start Script
+# Loads environment variables from .env and starts both backend and frontend
 
-echo "========================================="
-echo "  Brew & Co - Coffee Ordering Platform  "
-echo "========================================="
-echo ""
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Colors for output
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Step 1: Check if database exists
-echo -e "${YELLOW}Step 1: Checking database...${NC}"
-DB_EXISTS=$(sudo mysql -e "SHOW DATABASES LIKE 'brewco_db';" 2>/dev/null | grep brewco_db)
-
-if [ -z "$DB_EXISTS" ]; then
-    echo "Database doesn't exist. Creating brewco_db..."
-    sudo mysql -e "CREATE DATABASE IF NOT EXISTS brewco_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-    echo -e "${GREEN}✓ Database created successfully!${NC}"
+# Load environment variables from .env file
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    echo "✓ Loading environment variables from .env"
+    set -a
+    source "$SCRIPT_DIR/.env"
+    set +a
 else
-    echo -e "${GREEN}✓ Database already exists!${NC}"
+    echo "✗ ERROR: .env file not found!"
+    echo "  Copy .env.example to .env and fill in your credentials:"
+    echo "    cp .env.example .env"
+    exit 1
 fi
-echo ""
 
-# Step 2: Start Backend
-echo -e "${YELLOW}Step 2: Starting Spring Boot Backend...${NC}"
-cd backend
-echo "Building and running backend on http://localhost:8080"
-mvn spring-boot:run &
+# Kill existing processes on ports 8080 and 5173
+echo "Stopping existing services..."
+lsof -ti:8080 | xargs kill -9 2>/dev/null
+lsof -ti:5173 | xargs kill -9 2>/dev/null
+sleep 1
+
+# Start Backend
+echo "Starting backend on port 8080..."
+cd "$SCRIPT_DIR/backend"
+nohup mvn spring-boot:run > "$SCRIPT_DIR/backend/backend.log" 2>&1 &
 BACKEND_PID=$!
-cd ..
-echo -e "${GREEN}✓ Backend started (PID: $BACKEND_PID)${NC}"
-echo ""
 
-# Wait a bit for backend to initialize
-echo "Waiting 15 seconds for backend to initialize..."
-sleep 15
+# Wait for backend to be ready
+echo "Waiting for backend to start..."
+for i in {1..30}; do
+    if curl -s http://localhost:8080/api/admin/dashboard-stats > /dev/null 2>&1; then
+        echo "✓ Backend is running on http://localhost:8080"
+        break
+    fi
+    sleep 2
+done
 
-# Step 3: Start Frontend
-echo -e "${YELLOW}Step 3: Starting React Frontend...${NC}"
-cd frontend
-echo "Starting frontend on http://localhost:5173"
-npm run dev &
+# Start Frontend
+echo "Starting frontend on port 5173..."
+cd "$SCRIPT_DIR/frontend"
+nohup npm run dev > "$SCRIPT_DIR/frontend/frontend.log" 2>&1 &
 FRONTEND_PID=$!
-cd ..
-echo -e "${GREEN}✓ Frontend started (PID: $FRONTEND_PID)${NC}"
-echo ""
+sleep 2
 
+echo "✓ Frontend is running on http://localhost:5173"
+echo ""
 echo "========================================="
-echo -e "${GREEN}✓ Application is running!${NC}"
+echo "  Brew & Co is ready!"
+echo "  Frontend: http://localhost:5173"
+echo "  Backend:  http://localhost:8080"
 echo "========================================="
 echo ""
-echo "Backend API:  http://localhost:8080"
-echo "Frontend App: http://localhost:5173"
-echo ""
-echo "Press Ctrl+C to stop both servers"
-echo ""
-
-# Wait for both processes
-wait $BACKEND_PID $FRONTEND_PID
+echo "Logs:"
+echo "  Backend:  tail -f $SCRIPT_DIR/backend/backend.log"
+echo "  Frontend: tail -f $SCRIPT_DIR/frontend/frontend.log"

@@ -1,41 +1,31 @@
-# Compiled files
-*.class
-*.jar
-*.war
-*.ear
+# Environment variables (contains secrets)
+.env
+*.env.local
 
-# Maven
-target/
-.m2/
-*.pom
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-pom.xml.next
-release.properties
-dependency-reduced-pom.xml
+# Backend
+backend/target/
+backend/*.log
+backend/backend.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
 
 # IDE
 .idea/
 *.iml
-*.iws
-*.ipr
-.classpath
-.project
-.settings/
+.vscode/
 *.swp
 *.swo
-*~
+
+# OS
 .DS_Store
+Thumbs.db
 
-# Build
-build/
-dist/
+# Logs
 *.log
+nohup.out
 
-# Environment
-.env
-.env.local
-.env.*.local
-# Node modules
-node_modules/
+# Gemini
+.gemini/

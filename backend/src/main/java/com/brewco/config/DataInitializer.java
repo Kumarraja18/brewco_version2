@@ -3,6 +3,7 @@ package com.brewco.config;
 import com.brewco.entity.User;
 import com.brewco.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
@@ -13,15 +14,21 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private UserRepository userRepository;
 
+    @Value("${ADMIN_EMAIL}")
+    private String adminEmail;
+
+    @Value("${ADMIN_PASSWORD}")
+    private String adminPassword;
+
     @Override
     public void run(String... args) throws Exception {
         // Check if admin user already exists
-        if (!userRepository.existsByEmail("v.kumarraja2018@gmail.com")) {
+        if (!userRepository.existsByEmail(adminEmail)) {
             User adminUser = new User();
             adminUser.setFirstName("Admin");
             adminUser.setLastName("BrewCo");
-            adminUser.setEmail("v.kumarraja2018@gmail.com");
-            adminUser.setPassword("kumar0237"); // In production, use BCrypt to hash this!
+            adminUser.setEmail(adminEmail);
+            adminUser.setPassword(adminPassword);
             adminUser.setGender("MALE");
             adminUser.setRole("ADMIN");
             adminUser.setIsActive(true);
@@ -31,8 +38,7 @@ public class DataInitializer implements CommandLineRunner {
 
             userRepository.save(adminUser);
             System.out.println("✓ Default admin user created successfully!");
-            System.out.println("  Email: v.kumarraja2018@gmail.com");
-            System.out.println("  Password: kumar0237");
+            System.out.println("  Email: " + adminEmail);
         } else {
             System.out.println("✓ Admin user already exists. Skipping initialization.");
         }

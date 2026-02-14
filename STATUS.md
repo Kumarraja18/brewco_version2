@@ -13,10 +13,9 @@ Both backend and frontend servers are now up and running!
 
 ---
 
-## 🔐 Default Admin Credentials
+## 🔐 Admin Credentials
 
-- **Email**: v.kumarraja2018@gmail.com
-- **Password**: kumar0237
+Configured via environment variables in `.env` file.
 
 ---
 
@@ -30,7 +29,7 @@ Both backend and frontend servers are now up and running!
 
 ### 2. ✅ Database Configuration
 - Created `brewco_db` database
-- Created MySQL user `brewco` with password `kumar0237`
+- Created MySQL user `brewco` with credentials stored in `.env`
 - Granted all privileges on `brewco_db` to `brewco` user
 - Updated `application.properties` to use new database user
 
@@ -106,9 +105,8 @@ npm run dev
 ## 🗄️ Database Details
 
 - **Database Name**: brewco_db
-- **Username**: brewco
-- **Password**: kumar0237
 - **Host**: localhost:3306
+- **Credentials**: Configured via `.env` file
 
 ### Tables Created
 1. **users** - Main user table with authentication
