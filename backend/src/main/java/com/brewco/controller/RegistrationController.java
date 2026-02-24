@@ -30,7 +30,7 @@ public class RegistrationController {
 
     // Step 2: Save Address
     @PostMapping("/step2/address/{userId}")
-    public ResponseEntity<?> saveAddress(@PathVariable Long userId, @RequestBody AddressDto addressDto) {
+    public ResponseEntity<?> saveAddress(@PathVariable("userId") Long userId, @RequestBody AddressDto addressDto) {
         try {
             Map<String, Object> response = registrationService.saveAddress(userId, addressDto);
             return ResponseEntity.ok(response);
@@ -41,7 +41,8 @@ public class RegistrationController {
 
     // Step 3: Save Work Experience
     @PostMapping("/step3/work-experience/{userId}")
-    public ResponseEntity<?> saveWorkExperience(@PathVariable Long userId, @RequestBody WorkExperienceDto workExpDto) {
+    public ResponseEntity<?> saveWorkExperience(@PathVariable("userId") Long userId,
+            @RequestBody WorkExperienceDto workExpDto) {
         try {
             Map<String, Object> response = registrationService.saveWorkExperience(userId, workExpDto);
             return ResponseEntity.ok(response);
@@ -52,7 +53,8 @@ public class RegistrationController {
 
     // Step 4: Save Government Proof
     @PostMapping("/step4/govt-proof/{userId}")
-    public ResponseEntity<?> saveGovernmentProof(@PathVariable Long userId, @RequestBody GovernmentProofDto govProofDto) {
+    public ResponseEntity<?> saveGovernmentProof(@PathVariable("userId") Long userId,
+            @RequestBody GovernmentProofDto govProofDto) {
         try {
             Map<String, Object> response = registrationService.saveGovernmentProof(userId, govProofDto);
             return ResponseEntity.ok(response);
@@ -63,7 +65,7 @@ public class RegistrationController {
 
     // Get registration status
     @GetMapping("/status/{userId}")
-    public ResponseEntity<?> getRegistrationStatus(@PathVariable Long userId) {
+    public ResponseEntity<?> getRegistrationStatus(@PathVariable("userId") Long userId) {
         try {
             Map<String, Object> status = registrationService.getRegistrationStatus(userId);
             return ResponseEntity.ok(status);

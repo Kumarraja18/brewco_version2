@@ -1,0 +1,15 @@
+package com.brewco.repository;
+
+import com.brewco.entity.Cafe;
+import com.brewco.entity.MenuCategory;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface MenuCategoryRepository extends JpaRepository<MenuCategory, Long> {
+    List<MenuCategory> findByCafeAndIsActiveTrueOrderByDisplayOrder(Cafe cafe);
+
+    List<MenuCategory> findByCafeOrderByDisplayOrder(Cafe cafe);
+}

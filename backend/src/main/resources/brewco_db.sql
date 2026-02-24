@@ -1,158 +1,284 @@
--- MySQL dump 10.13  Distrib 8.4.8, for Linux (x86_64)
---
--- Host: localhost    Database: brewco_db
--- ------------------------------------------------------
--- Server version	8.4.8-0ubuntu0.25.10.1
+-- ============================================================
+-- Brew & Co — Drop and Recreate Database
+-- Run this manually in MySQL CLI:  mysql -u root -p < brewco_db.sql
+-- ============================================================
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+-- 1️⃣  DROP THE EXISTING DATABASE (ALL DATA WILL BE LOST)
+DROP DATABASE IF EXISTS brewco;
 
---
--- Current Database: `brewco_db`
---
+-- 2️⃣  CREATE FRESH DATABASE
+CREATE DATABASE brewco
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 
-/*!40000 DROP DATABASE IF EXISTS `brewco_db`*/;
+-- 3️⃣  SWITCH TO IT
+USE brewco;
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `brewco_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+-- ============================================================
+-- TABLE DEFINITIONS (in dependency order)
+-- ============================================================
 
-USE `brewco_db`;
+-- Users (all roles: CUSTOMER, CAFE_OWNER, WAITER, CHEF, ADMIN)
+CREATE TABLE users (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    first_name      VARCHAR(100) NOT NULL,
+    last_name       VARCHAR(100) NOT NULL,
+    email           VARCHAR(255) NOT NULL UNIQUE,
+    password_hash   VARCHAR(255),
+    phone_number    VARCHAR(20),
+    gender          VARCHAR(10),
+    date_of_birth   DATE,
+    role            VARCHAR(20) NOT NULL DEFAULT 'CUSTOMER',
+    is_active       BOOLEAN NOT NULL DEFAULT FALSE,
+    is_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    is_profile_complete BOOLEAN NOT NULL DEFAULT FALSE,
+    profile_image_url VARCHAR(500),
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
 
---
--- Table structure for table `addresses`
---
+-- Addresses (polymorphic — each user can have multiple)
+CREATE TABLE addresses (
+    id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id   BIGINT NOT NULL,
+    street    VARCHAR(255) NOT NULL,
+    city      VARCHAR(100) NOT NULL,
+    state     VARCHAR(100),
+    zip_code  VARCHAR(20),
+    country   VARCHAR(100) DEFAULT 'India',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS `addresses`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `addresses` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `city` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `postal_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `street` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` bigint NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `FK1fa36y2oqhao3wgg2rw1pi459` (`user_id`),
-  CONSTRAINT `FK1fa36y2oqhao3wgg2rw1pi459` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- Government Proofs (uploaded by staff during registration)
+CREATE TABLE government_proofs (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id         BIGINT NOT NULL,
+    proof_type      VARCHAR(50) NOT NULL,
+    document_number VARCHAR(100),
+    document_url    VARCHAR(500),
+    verified        BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
---
--- Dumping data for table `addresses`
---
+-- Work Experience (for staff: chefs, waiters)
+CREATE TABLE work_experiences (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id       BIGINT NOT NULL,
+    company_name  VARCHAR(200),
+    role          VARCHAR(100),
+    years         INT,
+    description   TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
-LOCK TABLES `addresses` WRITE;
-/*!40000 ALTER TABLE `addresses` DISABLE KEYS */;
-/*!40000 ALTER TABLE `addresses` ENABLE KEYS */;
-UNLOCK TABLES;
+-- Email Verification OTPs
+CREATE TABLE email_verifications (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id     BIGINT NOT NULL,
+    otp         VARCHAR(6) NOT NULL,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at  DATETIME NOT NULL,
+    is_used     BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
---
--- Table structure for table `govt_proof`
---
+-- Refresh Tokens (one per user, for JWT rotation)
+CREATE TABLE refresh_tokens (
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id    BIGINT NOT NULL UNIQUE,
+    token      VARCHAR(500) NOT NULL UNIQUE,
+    expiry_date DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS `govt_proof`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `govt_proof` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `proof_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `proof_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` bigint NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `FK7g8g1nq787aajjqrshkoc0xur` (`user_id`),
-  CONSTRAINT `FK7g8g1nq787aajjqrshkoc0xur` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- Cafes
+CREATE TABLE cafes (
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    owner_id          BIGINT NOT NULL,
+    name              VARCHAR(200) NOT NULL,
+    description       TEXT,
+    address           VARCHAR(500) NOT NULL,
+    city              VARCHAR(100) NOT NULL,
+    state             VARCHAR(100),
+    zip_code          VARCHAR(20),
+    contact_number    VARCHAR(20),
+    email             VARCHAR(255),
+    opening_time      TIME,
+    closing_time      TIME,
+    is_verified       BOOLEAN DEFAULT FALSE,
+    is_active         BOOLEAN DEFAULT TRUE,
+    avg_rating        DECIMAL(3,2) DEFAULT 0.00,
+    total_reviews     INT DEFAULT 0,
+    profile_image_url VARCHAR(500),
+    gst_number        VARCHAR(50),
+    fssai_license     VARCHAR(50),
+    food_license_number VARCHAR(50),
+    created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at        DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
---
--- Dumping data for table `govt_proof`
---
+-- Cafe Documents (licenses, images uploaded by owner)
+CREATE TABLE cafe_documents (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cafe_id         BIGINT NOT NULL,
+    document_type   VARCHAR(50) NOT NULL,
+    document_url    VARCHAR(500) NOT NULL,
+    uploaded_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cafe_id) REFERENCES cafes(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
-LOCK TABLES `govt_proof` WRITE;
-/*!40000 ALTER TABLE `govt_proof` DISABLE KEYS */;
-/*!40000 ALTER TABLE `govt_proof` ENABLE KEYS */;
-UNLOCK TABLES;
+-- Cafe Tables
+CREATE TABLE cafe_tables (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cafe_id      BIGINT NOT NULL,
+    table_number INT NOT NULL,
+    capacity     INT NOT NULL DEFAULT 4,
+    table_type   VARCHAR(30) DEFAULT 'STANDARD',
+    status       VARCHAR(20) DEFAULT 'AVAILABLE',
+    is_active    BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (cafe_id) REFERENCES cafes(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
---
--- Table structure for table `users`
---
+-- Staff Assignments (waiters/chefs assigned to cafes)
+CREATE TABLE staff_assignments (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cafe_id      BIGINT NOT NULL,
+    staff_id     BIGINT NOT NULL,
+    role         VARCHAR(20) NOT NULL,
+    is_active    BOOLEAN DEFAULT TRUE,
+    assigned_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cafe_id) REFERENCES cafes(id) ON DELETE CASCADE,
+    FOREIGN KEY (staff_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `users` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `created_at` datetime(6) NOT NULL,
-  `date_of_birth` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `first_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `gender` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_active` bit(1) DEFAULT NULL,
-  `last_login_at` datetime(6) DEFAULT NULL,
-  `last_login_ip` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `last_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `login_count` int DEFAULT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `phone_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `role` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `updated_at` datetime(6) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_6dotkott2kjsp8vw4d0m25fb7` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- Menu Categories
+CREATE TABLE menu_categories (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cafe_id       BIGINT NOT NULL,
+    name          VARCHAR(100) NOT NULL,
+    description   TEXT,
+    display_order INT DEFAULT 0,
+    is_active     BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (cafe_id) REFERENCES cafes(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
---
--- Dumping data for table `users`
---
+-- Menu Items
+CREATE TABLE menu_items (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    category_id   BIGINT NOT NULL,
+    cafe_id       BIGINT NOT NULL,
+    name          VARCHAR(200) NOT NULL,
+    description   TEXT,
+    price         DECIMAL(10,2) NOT NULL,
+    image_url     VARCHAR(500),
+    type          VARCHAR(20) DEFAULT 'VEG',
+    is_available  BOOLEAN DEFAULT TRUE,
+    is_addon      BOOLEAN DEFAULT FALSE,
+    avg_rating    DECIMAL(3,2) DEFAULT 0.00,
+    total_reviews INT DEFAULT 0,
+    FOREIGN KEY (category_id) REFERENCES menu_categories(id) ON DELETE CASCADE,
+    FOREIGN KEY (cafe_id) REFERENCES cafes(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'2026-02-14 11:25:42.270781',NULL,'v.kumarraja2018@gmail.com','Admin','MALE',_binary '','2026-02-14 13:01:43.110917','0:0:0:0:0:0:0:1','BrewCo',11,'kumar0237',NULL,'ADMIN','2026-02-14 13:01:43.112101'),(3,'2026-02-14 12:35:16.725546',NULL,'323103310025@gvpce.ac.in','Ravi Teja','MALE',_binary '',NULL,NULL,'BH',0,NULL,'','CUSTOMER','2026-02-14 12:35:32.522343'),(5,'2026-02-14 12:40:48.204035',NULL,'bhraviteja799@gmail.com','Ravi Teja','MALE',_binary '','2026-02-14 12:50:49.994953','127.0.0.1','Bhagavatula',2,'0&u$Rc6vzx','7993845825','CUSTOMER','2026-02-14 12:50:50.001691');
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
+-- Bookings (table reservations)
+CREATE TABLE bookings (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    booking_ref      VARCHAR(50) UNIQUE,
+    cafe_id          BIGINT NOT NULL,
+    customer_id      BIGINT NOT NULL,
+    table_id         BIGINT,
+    booking_date     DATE NOT NULL,
+    start_time       TIME NOT NULL,
+    end_time         TIME,
+    number_of_guests INT NOT NULL DEFAULT 2,
+    status           VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    special_requests TEXT,
+    created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at       DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (cafe_id) REFERENCES cafes(id) ON DELETE CASCADE,
+    FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (table_id) REFERENCES cafe_tables(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
---
--- Table structure for table `work_experience`
---
+-- Orders (note: table name `orders` — SQL reserved keyword, quoted in native queries)
+CREATE TABLE `orders` (
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_ref           VARCHAR(50) UNIQUE,
+    customer_id         BIGINT NOT NULL,
+    cafe_id             BIGINT NOT NULL,
+    table_id            BIGINT,
+    assigned_waiter_id  BIGINT,
+    assigned_chef_id    BIGINT,
+    order_type          VARCHAR(20) NOT NULL DEFAULT 'DINE_IN',
+    status              VARCHAR(30) NOT NULL DEFAULT 'PLACED',
+    subtotal            DECIMAL(10,2) DEFAULT 0.00,
+    tax_amount          DECIMAL(10,2) DEFAULT 0.00,
+    discount_amount     DECIMAL(10,2) DEFAULT 0.00,
+    grand_total         DECIMAL(10,2) DEFAULT 0.00,
+    payment_status      VARCHAR(20) DEFAULT 'PENDING',
+    special_instructions TEXT,
+    created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (cafe_id) REFERENCES cafes(id) ON DELETE CASCADE,
+    FOREIGN KEY (table_id) REFERENCES cafe_tables(id) ON DELETE SET NULL,
+    FOREIGN KEY (assigned_waiter_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (assigned_chef_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS `work_experience`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `work_experience` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `company_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `position` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `years` int NOT NULL,
-  `user_id` bigint NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `FKm7a8aj1sa7ec50xjqfbmp6jka` (`user_id`),
-  CONSTRAINT `FKm7a8aj1sa7ec50xjqfbmp6jka` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- Order Items
+CREATE TABLE order_items (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id     BIGINT NOT NULL,
+    menu_item_id BIGINT NOT NULL,
+    quantity     INT NOT NULL DEFAULT 1,
+    unit_price   DECIMAL(10,2) NOT NULL,
+    notes        TEXT,
+    FOREIGN KEY (order_id) REFERENCES `orders`(id) ON DELETE CASCADE,
+    FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
---
--- Dumping data for table `work_experience`
---
+-- Order Status History (audit trail)
+CREATE TABLE order_status_history (
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id   BIGINT NOT NULL,
+    status     VARCHAR(30) NOT NULL,
+    changed_by BIGINT,
+    notes      TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES `orders`(id) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
-LOCK TABLES `work_experience` WRITE;
-/*!40000 ALTER TABLE `work_experience` DISABLE KEYS */;
-/*!40000 ALTER TABLE `work_experience` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+-- Payments
+CREATE TABLE payments (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id        BIGINT NOT NULL,
+    payment_method  VARCHAR(30) NOT NULL,
+    amount          DECIMAL(10,2) NOT NULL,
+    status          VARCHAR(20) DEFAULT 'PENDING',
+    transaction_id  VARCHAR(200),
+    gateway_response TEXT,
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES `orders`(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+-- Audit Logs
+CREATE TABLE audit_logs (
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id    BIGINT,
+    action     VARCHAR(100) NOT NULL,
+    entity     VARCHAR(100),
+    entity_id  BIGINT,
+    details    TEXT,
+    ip_address VARCHAR(50),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
--- Dump completed on 2026-02-14 14:20:39
+-- ============================================================
+-- ✅ Database created — tables are ready for Hibernate ddl-auto=update
+-- ============================================================
+SELECT 'brewco database created successfully with all 18 tables!' AS status;

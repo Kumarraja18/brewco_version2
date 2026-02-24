@@ -36,6 +36,21 @@ public class User {
     @Column(nullable = true)
     private String password;
 
+    @Column(name = "password_hash")
+    private String passwordHash;
+
+    @Column(name = "is_email_verified")
+    private Boolean isEmailVerified = false;
+
+    @Column(name = "is_profile_complete")
+    private Boolean isProfileComplete = false;
+
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
+    @Column(name = "mobile_number", length = 15)
+    private String mobileNumber;
+
     @Column(name = "date_of_birth")
     private String dateOfBirth;
 

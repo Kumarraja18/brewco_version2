@@ -6,6 +6,7 @@ import com.brewco.dto.UserDto;
 import com.brewco.entity.User;
 import com.brewco.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -16,29 +17,88 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User registerUser(RegisterRequest request) throws Exception {
-        // Validate passwords match
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new Exception("Passwords do not match");
-        }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+
+    public User registerUser(RegisterRequest request) throws Exception {
         // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new Exception("Email already registered");
+            throw new Exception("Email already registered. Please login or reset your password.");
         }
 
-        // Create new user
+        // Determine role
+        String role = (request.getRole() != null && !request.getRole().isBlank())
+                ? request.getRole().toUpperCase()
+                : "CUSTOMER";
+
+        // Create new user (PASSWORD REMAINS NULL, GENERATED ON ADMIN APPROVAL)
         User user = new User();
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); // In production, hash this password!
         user.setDateOfBirth(request.getDateOfBirth());
         user.setGender(request.getGender());
-        user.setRole("CUSTOMER"); // Default role for new users
-        user.setIsActive(true);
+        if (request.getPhoneNumber() != null) {
+            user.setPhoneNumber(request.getPhoneNumber());
+        }
+        user.setRole(role);
+
+        // ALL newly registered users must be explicitly approved by Admin
+        user.setIsActive(false);
+        user.setIsEmailVerified(false);
 
         return userRepository.save(user);
+    }
+
+    public void verifyEmail(String email, String otp) throws Exception {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new Exception("User not found"));
+
+        if (user.getIsEmailVerified() != null && user.getIsEmailVerified()) {
+            throw new Exception("Email is already verified");
+        }
+
+        boolean isValid = emailVerificationService.verifyOtp(user, otp);
+        if (!isValid) {
+            throw new Exception("Invalid or expired OTP");
+        }
+
+        user.setIsEmailVerified(true);
+        userRepository.save(user);
+    }
+
+    public void resendOtp(String email) throws Exception {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new Exception("User not found"));
+
+        if (user.getIsEmailVerified() != null && user.getIsEmailVerified()) {
+            throw new Exception("Email is already verified");
+        }
+
+        emailVerificationService.generateAndSendOtp(user);
+    }
+
+    public void processForgotPassword(String email) throws Exception {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new Exception("No account found with this email"));
+
+        emailVerificationService.generateAndSendOtp(user);
+    }
+
+    public void resetPassword(String email, String otp, String newPassword) throws Exception {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new Exception("User not found"));
+
+        boolean isValid = emailVerificationService.verifyOtp(user, otp);
+        if (!isValid) {
+            throw new Exception("Invalid or expired OTP");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     public User loginUser(LoginRequest request) throws Exception {
@@ -56,28 +116,20 @@ public class UserService {
             throw new Exception("Your account is pending admin approval. Please wait for approval.");
         }
 
-        // Guard against null password (user approved without password somehow)
-        if (existingUser.getPassword() == null || existingUser.getPassword().isBlank()) {
-            throw new Exception("Your account has not been fully set up yet. Please contact admin.");
-        }
-
-        // Simple password check (in production, use BCrypt!)
-        if (!existingUser.getPassword().equals(request.getPassword())) {
-            throw new Exception("Invalid password");
-        }
-
-        // Cross-verify role if provided from frontend
-        if (request.getRole() != null && !request.getRole().isEmpty()) {
-            String selectedRole = request.getRole().toUpperCase().trim();
-            String actualRole = existingUser.getRole().toUpperCase().trim();
-
-            if (!selectedRole.equals(actualRole)) {
-                String friendlyRole = actualRole.replace("_", " ").toLowerCase();
-                throw new Exception("You are registered as '" + friendlyRole + "', not '"
-                        + selectedRole.replace("_", " ").toLowerCase()
-                        + "'. Please select the correct role.");
+        // Verify password using BCrypt
+        String savedHash = existingUser.getPasswordHash() != null ? existingUser.getPasswordHash()
+                : existingUser.getPassword();
+        if (savedHash == null || !passwordEncoder.matches(request.getPassword(), savedHash)) {
+            // Check if plaintext password matches (for un-migrated users during transition)
+            if (existingUser.getPassword() != null && existingUser.getPassword().equals(request.getPassword())) {
+                // Good, but should be migrated. Handled by PasswordMigrationRunner.
+            } else {
+                throw new Exception("Invalid password");
             }
         }
+
+        // Role is determined by the backend, not the frontend dropdown.
+        // The frontend role picker is cosmetic only — no cross-verification needed.
 
         // Record login details
         existingUser.setLastLoginAt(LocalDateTime.now());
@@ -125,6 +177,9 @@ public class UserService {
         dto.setRole(user.getRole());
         dto.setGender(user.getGender());
         dto.setIsActive(user.getIsActive());
+        dto.setIsProfileComplete(user.getIsProfileComplete());
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setIsEmailVerified(user.getIsEmailVerified());
         return dto;
     }
 }

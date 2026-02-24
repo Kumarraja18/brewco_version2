@@ -9,6 +9,7 @@ import com.brewco.repository.GovernmentProofRepository;
 import com.brewco.repository.UserRepository;
 import com.brewco.repository.WorkExperienceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -33,6 +34,9 @@ public class AdminService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // Dashboard statistics
     public Map<String, Object> getDashboardStats() {
@@ -137,7 +141,8 @@ public class AdminService {
         String randomPassword = generateRandomPassword(10);
 
         // Set password and activate
-        user.setPassword(randomPassword);
+        user.setPassword(randomPassword); // temporarily keeping it for legacy compatibility just in case
+        user.setPasswordHash(passwordEncoder.encode(randomPassword));
         user.setIsActive(true);
         user.setUpdatedAt(LocalDateTime.now());
 
@@ -190,7 +195,8 @@ public class AdminService {
         if (needsPassword) {
             // First-time activation = same as approval
             String randomPassword = generateRandomPassword(10);
-            user.setPassword(randomPassword);
+            user.setPassword(randomPassword); // Keep for legacy
+            user.setPasswordHash(passwordEncoder.encode(randomPassword));
             user.setIsActive(true);
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);

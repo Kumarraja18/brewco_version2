@@ -1,36 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { AuthContext } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import { Toaster } from 'react-hot-toast';
+
+// Auth Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Register from './pages/Register';
-import ProfileCompletion from './pages/ProfileCompletion';
-import CafeSelection from './pages/CafeSelection';
-import TableBooking from './pages/TableBooking';
-import Menu from './pages/Menu';
+import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
+
+// Customer Pages
+import CustomerDashboard from './pages/CustomerDashboard';
+import CafeList from './pages/CafeList';
+import CafeDetail from './pages/CafeDetail';
 import OrderTracking from './pages/OrderTracking';
-import AdminDashboard from './pages/AdminDashboard';
+import OrderHistory from './pages/OrderHistory';
+import ProfileCompletion from './pages/ProfileCompletion';
+
+// Cafe Owner Pages
+import CafeSetup from './pages/CafeSetup';
 import CafeOwnerDashboard from './pages/CafeOwnerDashboard';
+
+// Staff Pages
 import ChefDashboard from './pages/ChefDashboard';
 import WaiterDashboard from './pages/WaiterDashboard';
-import CustomerDashboard from './pages/CustomerDashboard';
+
+// Admin Pages
+import AdminDashboard from './pages/AdminDashboard';
+
 import { FaLinkedin, FaYoutube } from 'react-icons/fa';
 import { MdEmail, MdPhone } from 'react-icons/md';
 
 export default function App() {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const { user, loading, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
   // Check if we are on the admin dashboard route
-  const isAdminRoute = location.pathname === '/admin-dashboard';
+  const isAdminRoute = location.pathname.startsWith('/admin-dashboard');
+  // Full-screen routes without header/footer
+  const isFullscreen = isAdminRoute;
 
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    navigate('/');
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   const handleScrollNav = (sectionId) => {
@@ -45,16 +60,18 @@ export default function App() {
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
-    } else if (!isAdminRoute) {
+    } else if (!isFullscreen) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location]);
 
+  if (loading) return <div>Loading Application...</div>;
+
   // If admin dashboard, render without the main app wrapper layout
-  if (isAdminRoute) {
+  if (isFullscreen) {
     return (
       <Routes>
-        <Route path="/admin-dashboard" element={<AdminDashboard user={user} />} />
+        <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard user={user} /></ProtectedRoute>} />
       </Routes>
     );
   }
@@ -89,20 +106,37 @@ export default function App() {
 
       <main className="container">
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login setUser={setUser} />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Customer Routes */}
+          <Route path="/customer-dashboard" element={<ProtectedRoute requiredRole="CUSTOMER"><CustomerDashboard /></ProtectedRoute>} />
+          <Route path="/cafes" element={<CafeList />} />
+          <Route path="/cafe/:cafeId" element={<CafeDetail />} />
+          <Route path="/order-tracking/:orderId" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderTracking /></ProtectedRoute>} />
+          <Route path="/my-orders" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderHistory /></ProtectedRoute>} />
+          <Route path="/my-bookings" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderHistory /></ProtectedRoute>} />
           <Route path="/profile-completion" element={<ProfileCompletion />} />
-          <Route path="/cafe-selection" element={<CafeSelection />} />
-          <Route path="/table-booking/:cafeId" element={<TableBooking />} />
-          <Route path="/menu/:bookingId" element={<Menu />} />
-          <Route path="/order-tracking" element={<OrderTracking />} />
-          <Route path="/cafe-owner-dashboard" element={<CafeOwnerDashboard user={user} />} />
-          <Route path="/chef-dashboard" element={<ChefDashboard user={user} />} />
-          <Route path="/waiter-dashboard" element={<WaiterDashboard user={user} />} />
-          <Route path="/customer-dashboard" element={<CustomerDashboard user={user} />} />
+
+          {/* Legacy routes (backward compat) */}
+          <Route path="/cafe-selection" element={<CafeList />} />
+          <Route path="/order-tracking" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderHistory /></ProtectedRoute>} />
+
+          {/* Cafe Owner Routes */}
+          <Route path="/cafe-setup" element={<ProtectedRoute requiredRole="CAFE_OWNER"><CafeSetup /></ProtectedRoute>} />
+          <Route path="/cafe-owner-dashboard" element={<ProtectedRoute requiredRole="CAFE_OWNER"><CafeOwnerDashboard /></ProtectedRoute>} />
+
+          {/* Staff Routes */}
+          <Route path="/chef-dashboard" element={<ProtectedRoute requiredRole="CHEF"><ChefDashboard /></ProtectedRoute>} />
+          <Route path="/waiter-dashboard" element={<ProtectedRoute requiredRole="WAITER"><WaiterDashboard /></ProtectedRoute>} />
         </Routes>
       </main>
+
+      <Toaster position="top-right" />
 
       <footer className="footer" id="footer">
         <div className="footer-content">

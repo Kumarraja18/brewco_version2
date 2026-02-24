@@ -1,15 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { loginUser } from '../api'
+import { AuthContext } from '../context/AuthContext'
+import toast from 'react-hot-toast'
 import '../styles/login.css'
 
-export default function Login({ setUser }) {
+export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('customer')
+  const [role, setRole] = useState('customer') // Cosmetic only — not sent to backend
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { login } = useContext(AuthContext)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -23,36 +25,26 @@ export default function Login({ setUser }) {
     }
 
     try {
-      // Send selected role to backend for cross-verification
-      const data = await loginUser({
-        email,
-        password,
-        role: role.toUpperCase(),
-      })
+      // Role is NOT sent to backend — backend determines role from email
+      const data = await login(email, password)
 
-      // Use the role from the BACKEND response (verified & authoritative)
-      const backendRole = data.user.role ? data.user.role.toLowerCase() : 'customer'
+      // Use the role from the BACKEND response (authoritative)
+      const backendRole = data.user?.role ? data.user.role.toLowerCase() : 'customer'
 
-      const userData = {
-        id: data.user.id,
-        email: data.user.email,
-        role: backendRole,
-        firstName: data.user.firstName,
-        lastName: data.user.lastName,
-        gender: data.user.gender,
-        isActive: data.user.isActive,
-      }
+      toast.success(`Welcome back, ${data.user?.firstName || 'User'}!`)
 
-      setUser(userData)
-      localStorage.setItem('user', JSON.stringify(userData))
-
-      // Route based on the verified role from the backend
+      // Route based on backend's verified role
       switch (backendRole) {
         case 'admin':
           navigate('/admin-dashboard')
           break
         case 'cafe_owner':
-          navigate('/cafe-owner-dashboard')
+          // If cafe owner hasn't completed cafe setup, redirect to setup wizard
+          if (!data.user?.isProfileComplete) {
+            navigate('/cafe-setup')
+          } else {
+            navigate('/cafe-owner-dashboard')
+          }
           break
         case 'chef':
           navigate('/chef-dashboard')
@@ -64,13 +56,8 @@ export default function Login({ setUser }) {
           navigate('/customer-dashboard')
       }
     } catch (err) {
-      const msg = err.message || 'Login failed. Please try again.'
-      // If user not found, suggest signing up
-      if (msg.includes('sign up')) {
-        setError(msg)
-      } else {
-        setError(msg)
-      }
+      const msg = err.response?.data?.message || err.message || 'Login failed. Please try again.'
+      setError(msg)
     } finally {
       setLoading(false)
     }
@@ -90,7 +77,6 @@ export default function Login({ setUser }) {
           </div>
         </div>
 
-
         {/* RIGHT FORM */}
         <div className="login-page__form-wrapper">
           <form className="login-form" onSubmit={handleSubmit}>
@@ -99,7 +85,7 @@ export default function Login({ setUser }) {
             {error && (
               <div className="login-form__error">
                 {error}
-                {error.includes('sign up') && (
+                {error.toLowerCase().includes('sign up') && (
                   <span style={{ display: 'block', marginTop: '6px' }}>
                     <Link to="/register" style={{ color: '#6f4e37', fontWeight: 700, textDecoration: 'underline' }}>
                       Click here to Sign Up →
@@ -109,6 +95,7 @@ export default function Login({ setUser }) {
               </div>
             )}
 
+            {/* Role dropdown — visually present but NOT used for authentication */}
             <label className="login-form__field">
               Select Role
               <select
@@ -148,6 +135,12 @@ export default function Login({ setUser }) {
               />
             </label>
 
+            <div style={{ textAlign: 'right', marginTop: '-8px', marginBottom: '12px' }}>
+              <Link to="/forgot-password" style={{ color: '#A67C52', fontSize: '0.85rem', textDecoration: 'none' }}>
+                Forgot Password?
+              </Link>
+            </div>
+
             <div className="login-form__actions">
               <button
                 type="submit"
@@ -166,7 +159,5 @@ export default function Login({ setUser }) {
 
       </div>
     </div>
-
-
   )
 }

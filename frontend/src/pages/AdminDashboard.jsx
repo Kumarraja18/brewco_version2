@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   getAdminDashboardStats,
@@ -9,8 +9,12 @@ import {
   rejectUser,
   deactivateUser,
   activateUser,
+  getPendingCafes,
+  verifyCafe,
+  rejectCafeApp
 } from '../api'
 import '../styles/admin-dashboard.css'
+import { AuthContext } from '../context/AuthContext'
 
 // ── Helpers ──
 const formatDate = (iso) => {
@@ -39,6 +43,7 @@ const randomBars = () => DAYS.map(() => [
 // ── Component ──
 export default function AdminDashboard({ user }) {
   const navigate = useNavigate()
+  const { logout } = useContext(AuthContext)
   const [activeNav, setActiveNav] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -46,6 +51,7 @@ export default function AdminDashboard({ user }) {
   const [stats, setStats] = useState(null)
   const [pendingUsers, setPendingUsers] = useState([])
   const [allUsers, setAllUsersState] = useState([])
+  const [pendingCafes, setPendingCafes] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Clock
@@ -66,14 +72,16 @@ export default function AdminDashboard({ user }) {
   const loadDashboard = useCallback(async () => {
     try {
       setLoading(true)
-      const [s, p, a] = await Promise.all([
+      const [s, p, a, c] = await Promise.all([
         getAdminDashboardStats(),
         getPendingUsers(),
         getAllUsers(),
+        getPendingCafes()
       ])
       setStats(s)
       setPendingUsers(p)
       setAllUsersState(a)
+      setPendingCafes(c || [])
     } catch (err) {
       console.error('Dashboard load error:', err)
       showToast('error', 'Load Error', err.message)
@@ -155,14 +163,33 @@ export default function AdminDashboard({ user }) {
     }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('user')
-    navigate('/')
-    window.location.reload()
+  const handleVerifyCafe = async (cafeId) => {
+    try {
+      await verifyCafe(cafeId)
+      showToast('success', 'Cafe Verified!', 'The cafe has been successfully verified.')
+      loadDashboard()
+    } catch (err) {
+      showToast('error', 'Verification Failed', err.message)
+    }
+  }
+
+  const handleRejectCafe = async (cafeId) => {
+    try {
+      await rejectCafeApp(cafeId)
+      showToast('success', 'Cafe Rejected', 'The cafe application has been rejected.')
+      loadDashboard()
+    } catch (err) {
+      showToast('error', 'Rejection Failed', err.message)
+    }
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login')
   }
 
   // ── Render ──
-  if (!user || user.role !== 'admin') {
+  if (!user || user.role?.toUpperCase() !== 'ADMIN') {
     return (
       <div style={{ padding: '4rem', textAlign: 'center' }}>
         <h2>⛔ Access Denied</h2>
@@ -187,15 +214,11 @@ export default function AdminDashboard({ user }) {
             </div>
             <div className="admin-sidebar-profile-info">
               <h4>{user.firstName} {user.lastName}</h4>
-              <p>Head Barista</p>
+              <p>Admin</p>
             </div>
           </div>
 
-          <div className="admin-sidebar-quick">
-            <button title="Notifications">🔔</button>
-            <button title="Messages">💬</button>
-            <button title="Settings">⚙️</button>
-          </div>
+
         </div>
 
         <nav className="admin-sidebar-nav">
@@ -216,28 +239,18 @@ export default function AdminDashboard({ user }) {
             )}
           </button>
           <button
-            className={`admin-sidebar-nav-item ${activeNav === 'pages' ? 'active' : ''}`}
-            onClick={() => setActiveNav('dashboard')}
+            className={`admin-sidebar-nav-item ${activeNav === 'cafes' ? 'active' : ''}`}
+            onClick={() => setActiveNav('cafes')}
           >
-            <span className="nav-icon">📄</span> Pages
-          </button>
-          <button
-            className={`admin-sidebar-nav-item ${activeNav === 'layouts' ? 'active' : ''}`}
-            onClick={() => setActiveNav('dashboard')}
-          >
-            <span className="nav-icon">🏗️</span> Layouts
+            <span className="nav-icon">🏪</span> Cafes
+            {pendingCafes.length > 0 && (
+              <span className="nav-badge">{pendingCafes.length}</span>
+            )}
           </button>
 
-          <div className="admin-sidebar-nav-label">Components</div>
-          <button className="admin-sidebar-nav-item" onClick={() => setActiveNav('dashboard')}>
-            <span className="nav-icon">🎨</span> UI Kits
-          </button>
-          <button className="admin-sidebar-nav-item" onClick={() => setActiveNav('users')}>
-            <span className="nav-icon">📋</span> Tables
-          </button>
-          <button className="admin-sidebar-nav-item" onClick={() => setActiveNav('dashboard')}>
-            <span className="nav-icon">📈</span> Charts
-          </button>
+
+
+
         </nav>
 
         <div className="admin-sidebar-footer">
@@ -257,12 +270,11 @@ export default function AdminDashboard({ user }) {
           <div className="admin-topbar-left">
             <button className="hamburger" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
             <div className="admin-breadcrumb">
-              Home &gt; <span>{activeNav === 'dashboard' ? 'Dashboard' : 'Users'}</span>
+              Home &gt; <span>{activeNav === 'dashboard' ? 'Dashboard' : activeNav === 'users' ? 'Users' : 'Cafes'}</span>
             </div>
           </div>
           <div className="admin-topbar-right">
-            <span className="user-link">Home</span>
-            <span className="user-link">{user.email}</span>
+            <span className="user-link">{user.firstName} {user.lastName}</span>
             <button className="logout-btn" onClick={handleLogout}>Logout</button>
           </div>
         </div>
@@ -284,42 +296,23 @@ export default function AdminDashboard({ user }) {
               onApprove={handleApprove}
               onReject={handleReject}
             />
-          ) : (
+          ) : activeNav === 'users' ? (
             <UsersView
               allUsers={allUsers}
               onView={openViewModal}
               onActivate={handleActivate}
               onDeactivate={handleDeactivate}
             />
+          ) : (
+            <CafesView
+              pendingCafes={pendingCafes}
+              onVerify={handleVerifyCafe}
+              onReject={handleRejectCafe}
+            />
           )}
         </div>
 
-        {/* Footer */}
-        <div className="admin-footer">
-          <div>
-            <div className="admin-footer-brand">
-              <span className="brand-icon">☕</span>
-              <span>Brew & Co</span>
-            </div>
-            <p>Brew better moments. Your personal coffee management platform.</p>
-          </div>
-          <div>
-            <h4>Quick Links</h4>
-            <ul>
-              <li><a href="/">Home</a></li>
-              <li><a href="/login">Login</a></li>
-              <li><a href="/register">Signup</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Connect</h4>
-            <ul>
-              <li><a href="#">Instagram</a></li>
-              <li><a href="#">Twitter</a></li>
-              <li><a href="#">LinkedIn</a></li>
-            </ul>
-          </div>
-        </div>
+
       </div>
 
       {/* ── MODAL ── */}
@@ -484,11 +477,6 @@ function DashboardView({ stats, pendingUsers, now, bars, allUsers, onView, onApp
         <div className="admin-stat-card clock">
           <div className="stat-value">{formatTime(now)}</div>
           <div className="clock-date">{formatFullDate(now)}</div>
-          <div className="clock-actions">
-            <button>⏰</button>
-            <button>🔔</button>
-            <button>📅</button>
-          </div>
         </div>
       </div>
 
@@ -568,64 +556,7 @@ function DashboardView({ stats, pendingUsers, now, bars, allUsers, onView, onApp
           </div>
         </div>
 
-        {/* Projects – Pending Registrations */}
-        <div className="admin-widget">
-          <div className="admin-widget-head">
-            <div>
-              <h3>Projects</h3>
-              <p>Registration approvals</p>
-            </div>
-            <div className="admin-widget-actions">
-              <button>↻</button>
-              <button>⚙</button>
-            </div>
-          </div>
-          <div className="admin-widget-body scrollable">
-            {pendingUsers.length === 0 ? (
-              <div className="admin-no-data">
-                <div className="no-data-icon">✅</div>
-                <p>No pending registrations</p>
-              </div>
-            ) : (
-              <table className="admin-projects-table">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Status</th>
-                    <th>Activity</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingUsers.map((u) => (
-                    <tr key={u.id}>
-                      <td>
-                        <div className="user-email">
-                          <div className="email-avatar">{initials(u.firstName, u.lastName)}</div>
-                          <span>{u.email}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="status-badge pending">Pending</span>
-                      </td>
-                      <td>
-                        <div className="activity-bar">
-                          <div className="activity-bar-fill" style={{ width: '30%' }}></div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="action-btns">
-                          <button className="action-btn view" onClick={() => onView(u.id)}>View</button>
-                          <button className="action-btn approve" onClick={() => onApprove(u.id)}>Approve</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
+
       </div>
 
       {/* ── BOTTOM GRID: Sales | Coffee Image + Line Chart ── */}
@@ -814,6 +745,78 @@ function UsersView({ allUsers, onView, onActivate, onDeactivate }) {
                         <button className="action-btn approve" onClick={() => onActivate(u.id)}>Activate</button>
                       )
                     )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
+// ══════════════════════════════════
+//  CAFES VIEW
+// ══════════════════════════════════
+function CafesView({ pendingCafes, onVerify, onReject }) {
+  return (
+    <div className="admin-users-table-wrapper">
+      <div className="admin-users-table-head">
+        <h3>Pending Cafes ({pendingCafes.length})</h3>
+      </div>
+      {pendingCafes.length === 0 ? (
+        <div className="admin-no-data">
+          <div className="no-data-icon">🏪</div>
+          <p>No pending cafes to review.</p>
+        </div>
+      ) : (
+        <table className="admin-full-table">
+          <thead>
+            <tr>
+              <th>Cafe Name</th>
+              <th>Owner Details</th>
+              <th>Location</th>
+              <th>GST / FSSAI</th>
+              <th>Reg Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pendingCafes.map(cafe => (
+              <tr key={cafe.id}>
+                <td>
+                  <div className="user-cell">
+                    <div className="cell-avatar">{cafe.name ? cafe.name[0].toUpperCase() : 'C'}</div>
+                    <div className="cell-info">
+                      <h5>{cafe.name}</h5>
+                      <p>{cafe.email}</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div className="cell-info">
+                    <h5>{cafe.owner?.firstName} {cafe.owner?.lastName}</h5>
+                    <p>{cafe.contactNumber}</p>
+                  </div>
+                </td>
+                <td>
+                  <div className="cell-info">
+                    <h5>{cafe.city}, {cafe.state}</h5>
+                    <p>{cafe.zipCode}</p>
+                  </div>
+                </td>
+                <td>
+                  <div className="cell-info">
+                    <h5>GST: {cafe.gstNumber || 'N/A'}</h5>
+                    <p>FSSAI: {cafe.fssaiLicense || 'N/A'}</p>
+                  </div>
+                </td>
+                <td>{formatDate(cafe.createdAt)}</td>
+                <td>
+                  <div className="action-btns">
+                    <button className="action-btn approve" onClick={() => onVerify(cafe.id)}>Verify</button>
+                    <button className="action-btn reject" onClick={() => onReject(cafe.id)}>Reject</button>
                   </div>
                 </td>
               </tr>

@@ -15,4 +15,7 @@ public class UserDto {
     private String role;
     private String gender;
     private Boolean isActive;
+    private Boolean isProfileComplete;
+    private String phoneNumber;
+    private Boolean isEmailVerified;
 }

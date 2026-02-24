@@ -1,3 +1,5 @@
+import api from './api/axiosClient';
+
 const API_BASE_URL = 'http://localhost:8080/api'
 
 export const registerUser = async (userData) => {
@@ -90,59 +92,63 @@ export const updateUserProfile = async (userId, userData) => {
 // ========== Admin API ==========
 
 export const getAdminDashboardStats = async () => {
-  const response = await fetch(`${API_BASE_URL}/admin/dashboard-stats`)
-  if (!response.ok) throw new Error('Failed to fetch stats')
-  return response.json()
+  const response = await api.get('/admin/dashboard-stats')
+  return response.data
 }
 
 export const getAllUsers = async () => {
-  const response = await fetch(`${API_BASE_URL}/admin/users`)
-  if (!response.ok) throw new Error('Failed to fetch users')
-  return response.json()
+  const response = await api.get('/admin/users')
+  return response.data
 }
 
 export const getPendingUsers = async () => {
-  const response = await fetch(`${API_BASE_URL}/admin/pending-users`)
-  if (!response.ok) throw new Error('Failed to fetch pending users')
-  return response.json()
+  const response = await api.get('/admin/pending-users')
+  return response.data
 }
 
 export const getUserFullDetails = async (userId) => {
-  const response = await fetch(`${API_BASE_URL}/admin/user/${userId}`)
-  if (!response.ok) throw new Error('Failed to fetch user details')
-  return response.json()
+  const response = await api.get(`/admin/user/${userId}`)
+  return response.data
 }
 
 export const approveUser = async (userId) => {
-  const response = await fetch(`${API_BASE_URL}/admin/approve/${userId}`, {
-    method: 'PUT',
-  })
-  if (!response.ok) throw new Error('Failed to approve user')
-  return response.json()
+  const response = await api.put(`/admin/approve/${userId}`)
+  return response.data
 }
 
 export const rejectUser = async (userId) => {
-  const response = await fetch(`${API_BASE_URL}/admin/reject/${userId}`, {
-    method: 'DELETE',
-  })
-  if (!response.ok) throw new Error('Failed to reject user')
-  return response.json()
+  const response = await api.delete(`/admin/reject/${userId}`)
+  return response.data
 }
 
 export const deactivateUser = async (userId) => {
-  const response = await fetch(`${API_BASE_URL}/admin/deactivate/${userId}`, {
-    method: 'PUT',
-  })
-  if (!response.ok) throw new Error('Failed to deactivate user')
-  return response.json()
+  const response = await api.put(`/admin/deactivate/${userId}`)
+  return response.data
 }
 
 export const activateUser = async (userId) => {
-  const response = await fetch(`${API_BASE_URL}/admin/activate/${userId}`, {
-    method: 'PUT',
-  })
-  if (!response.ok) throw new Error('Failed to activate user')
-  return response.json()
+  const response = await api.put(`/admin/activate/${userId}`)
+  return response.data
+}
+
+export const getPendingCafes = async () => {
+  const response = await api.get('/admin/cafes/pending')
+  return response.data
+}
+
+export const verifyCafe = async (cafeId) => {
+  const response = await api.put(`/admin/cafes/${cafeId}/verify`)
+  return response.data
+}
+
+export const rejectCafeApp = async (cafeId) => {
+  const response = await api.put(`/admin/cafes/${cafeId}/reject`)
+  return response.data
+}
+
+export const deleteCafe = async (cafeId) => {
+  const response = await api.delete(`/admin/cafes/${cafeId}`)
+  return response.data
 }
 
 // Registration Steps API

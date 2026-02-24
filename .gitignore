@@ -1,33 +1,92 @@
-# Environment variables (contains secrets)
+# Environment variables and credentials
 .env
-*.env.local
+*.env
+.env.local
+.env.production
+application-*.properties
+!src/main/resources/application.properties
 
-# Backend
+# Text files (logs, notes, development files)
+*.txt
+
+# Markdown files (keep only README.md)
+*.md
+!README.md
+*.md.*
+implementation_plan.md.resolved
+
+# Development/test Java files
+HashGen.java
+BCryptTest.java
+GenHash.java
+**/BCryptTest.java
+**/GenHash.java
+
+# SQL files at root (development/setup files)
+/*.sql
+
+# Batch and shell scripts (local setup)
+*.bat
+*.sh
+
+# Backend - Maven
 backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
 backend/*.log
-backend/backend.log
+backend/*.txt
 
-# Frontend
+# Frontend - Node
 frontend/node_modules/
 frontend/dist/
+frontend/build/
 frontend/.vite/
+frontend/.next/
+frontend/out/
+node_modules/
 
-# IDE
+# IDE files
 .idea/
-*.iml
 .vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
 *.swp
 *.swo
+*~
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Logs
+# Log files
 *.log
+logs/
 nohup.out
+
+# Compiled files
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Build artifacts
+target/
+build/
+dist/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
 
 # Gemini
 .gemini/
-
-node_modules/
