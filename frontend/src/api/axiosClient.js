@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   withCredentials: true, // CRITICAL: sends HttpOnly cookies automatically
   headers: { 'Content-Type': 'application/json' }
 });
@@ -26,7 +26,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        await axios.post('http://localhost:8080/api/auth/refresh', {}, { withCredentials: true });
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+        await axios.post(`${apiUrl}/auth/refresh`, {}, { withCredentials: true });
         return api(originalRequest);
       } catch (refreshError) {
         // Don't force redirect — let the component handle it
