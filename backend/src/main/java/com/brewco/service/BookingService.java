@@ -26,6 +26,13 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
+    public Booking createBooking(Booking booking) {
+        if (booking.getBookingRef() == null) {
+            booking.setBookingRef(referenceGenerator.generateBookingReference());
+        }
+        return bookingRepository.save(booking);
+    }
+
     public List<Booking> getCustomerBookings(User customer) {
         return bookingRepository.findByCustomer(customer);
     }

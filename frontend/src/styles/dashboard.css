@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 /* ============================================================
    BREW & CO — PREMIUM DASHBOARD STYLES
    Inspired by KCofee Guidance UI
@@ -24,21 +26,21 @@
 
 /* Global Fonts & Body */
 body {
-  font-family: 'Georgia', serif;
-  background: #fdfaf7;
+  font-family: 'Inter', sans-serif;
+  background: #f0ebe4;
   color: var(--dark);
 }
 
 /* Sidebar Customization */
 .sidebar-premium {
-  background: linear-gradient(180deg, var(--brown) 0%, var(--dark) 100%) !important;
-  border-right: 3px solid var(--accent);
+  background: linear-gradient(180deg, #1e1610 0%, #2a1f17 40%, #1e1610 100%) !important;
+  border-right: 1px solid rgba(166, 124, 82, 0.18);
 }
 
 .nav-item-premium {
   margin: 4px 15px !important;
   padding: 12px 18px !important;
-  font-family: 'Georgia', serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 600 !important;
   letter-spacing: 0.5px;
   transition: all 0.3s ease !important;
@@ -72,7 +74,7 @@ body {
 
 /* Buttons */
 .brew-btn {
-  font-family: 'Georgia', serif !important;
+  font-family: 'Inter', sans-serif !important;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 700 !important;
@@ -93,7 +95,7 @@ body {
 
 /* Section Headers */
 .section-title-premium {
-  font-family: 'Georgia', serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 900;
   color: var(--brown);
   position: relative;
@@ -113,14 +115,17 @@ body {
 
 /* Category Headers */
 .category-header-premium {
-  background: var(--light-cream);
-  padding: 10px 20px;
-  border-radius: 10px;
-  border-left: 5px solid var(--brown);
-  font-family: 'Georgia', serif;
-  font-weight: 800;
-  color: var(--brown);
-  margin-bottom: 20px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  border-left: 4px solid #a67c52;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #2e241f;
+  background: rgba(166, 124, 82, 0.05);
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Tables Customization */
@@ -131,3 +136,70 @@ body {
 
 .table-premium .status-available { color: var(--success); font-weight: 800; }
 .table-premium .status-occupied { color: var(--danger); font-weight: 800; }
+
+/* Filter UI Components */
+.admin-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-filter-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #8b6f63;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.admin-filter-pills {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.admin-filter-pill {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1px solid #d4c0a8;
+  background: #fff;
+  color: #6f4e37;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.admin-filter-pill:hover {
+  background: #faf8f5;
+  border-color: #a67c52;
+}
+
+.admin-filter-pill.active {
+  background: #6f4e37;
+  color: #fff;
+  border-color: #6f4e37;
+  box-shadow: 0 4px 10px rgba(111, 78, 55, 0.2);
+}
+
+.admin-filter-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d4c0a8;
+  font-size: 0.85rem;
+  color: #2e241f;
+  outline: none;
+  background: #fff;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  min-width: 140px;
+  transition: border-color 0.2s;
+}
+
+.admin-filter-select:focus {
+  border-color: #a67c52;
+  box-shadow: 0 0 0 3px rgba(166, 124, 82, 0.1);
+}

@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/api/debug/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/cafes/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/admin/**")).hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(new AntPathRequestMatcher("/api/cafe-owner/**")).hasAuthority("ROLE_CAFE_OWNER")
+                        .requestMatchers(new AntPathRequestMatcher("/api/cafe-owner/**")).hasAnyAuthority("ROLE_CAFE_OWNER", "ROLE_CHEF", "ROLE_WAITER")
                         .requestMatchers(new AntPathRequestMatcher("/api/owner/**")).hasAuthority("ROLE_CAFE_OWNER")
                         .requestMatchers(new AntPathRequestMatcher("/api/chef/**")).hasAuthority("ROLE_CHEF")
                         .requestMatchers(new AntPathRequestMatcher("/api/waiter/**")).hasAuthority("ROLE_WAITER")

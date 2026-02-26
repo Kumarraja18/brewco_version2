@@ -583,6 +583,37 @@ public class CafeOwnerController {
         }
     }
 
+    @PostMapping("/cafes/{cafeId}/bookings")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> createBooking(@PathVariable("cafeId") Long cafeId, @RequestBody Map<String, Object> payload,
+            Authentication auth) {
+        try {
+            Cafe cafe = getOwnedCafe(cafeId, auth);
+            Booking booking = new Booking();
+            booking.setCafe(cafe);
+            booking.setCustomerName((String) payload.get("customerName"));
+            booking.setCustomerEmail((String) payload.get("customerEmail"));
+            booking.setCustomerPhone((String) payload.get("customerPhone"));
+            
+            if (payload.get("bookingDate") != null) {
+                booking.setBookingDate(java.time.LocalDate.parse(payload.get("bookingDate").toString()));
+            }
+            if (payload.get("startTime") != null) {
+                booking.setStartTime(java.time.LocalTime.parse(payload.get("startTime").toString()));
+            }
+            
+            booking.setNumberOfGuests(Integer.parseInt(payload.get("numberOfGuests").toString()));
+            booking.setStatus(payload.get("status") != null ? (String) payload.get("status") : "PENDING");
+            
+            // Generate a unique reference
+            booking.setBookingRef("BKG-" + System.currentTimeMillis() % 1000000);
+
+            return ResponseEntity.ok(bookingService.createBooking(booking));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/cafes/{cafeId}/bookings/{bookingId}/status")
     public ResponseEntity<?> updateBookingStatus(@PathVariable("cafeId") Long cafeId,
             @PathVariable("bookingId") Long bookingId,
