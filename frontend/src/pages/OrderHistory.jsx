@@ -1,79 +1,81 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import api from '../api/axiosClient'
-import '../styles/dashboard.css'
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../api/axiosClient';
+import { FaChevronLeft, FaClock, FaCheckCircle, FaUtensils, FaShoppingBag } from 'react-icons/fa';
+import BottomNav from '../components/BottomNav';
+import '../styles/customer.css';
 
 export default function OrderHistory() {
-    const [orders, setOrders] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [filter, setFilter] = useState('ALL')
-    const navigate = useNavigate()
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('DINE_IN');
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await api.get('/customer/orders')
-                setOrders(res.data || [])
-            } catch { /* ignore */ }
-            setLoading(false)
+        loadOrders();
+    }, []);
+
+    const loadOrders = async () => {
+        try {
+            const res = await api.get('/customer/orders');
+            setOrders(res.data || []);
+        } catch (err) {
+            console.error("Failed to load orders");
+        } finally {
+            setLoading(false);
         }
-        load()
-    }, [])
+    };
 
-    const filtered = filter === 'ALL' ? orders : orders.filter(o => o.status === filter)
+    const filtered = orders.filter(o => o.orderType === activeTab);
 
-    if (loading) return <div className="dashboard-page"><div className="brew-spinner" /></div>
+    if (loading) return <div className="brew-spinner-container"><div className="brew-spinner" /></div>;
 
     return (
-        <div className="dashboard-page">
-            <div className="dashboard-page__header">
-                <h1 className="dashboard-page__title">Order History</h1>
-                <p className="dashboard-page__subtitle">View all your past and active orders</p>
+        <div className="customer-home" style={{paddingBottom: '100px', background: '#f8f8f8', minHeight: '100vh'}}>
+            <div style={{padding: '20px', background: '#fff', display: 'flex', alignItems: 'center', gap: '15px', position: 'sticky', top: 0, zIndex: 100}}>
+                <FaChevronLeft onClick={() => navigate('/customer-home')} style={{cursor: 'pointer'}} />
+                <h2 style={{margin: 0, fontSize: '1.1rem', fontWeight: 800}}>My Orders</h2>
             </div>
 
-            <div className="brew-tabs" style={{ maxWidth: '600px', marginBottom: '1.5rem' }}>
-                {['ALL', 'PLACED', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED'].map(f => (
-                    <button key={f} className={`brew-tab ${filter === f ? 'brew-tab--active' : ''}`}
-                        onClick={() => setFilter(f)}
-                    >
-                        {f === 'ALL' ? 'All' : f.charAt(0) + f.slice(1).toLowerCase()}
-                    </button>
-                ))}
-            </div>
-
-            {filtered.length === 0 ? (
-                <div className="empty-state">
-                    <div className="empty-state__icon">📋</div>
-                    <div className="empty-state__text">No orders found</div>
-                    <div className="empty-state__subtext">Place your first order to see it here</div>
-                    <button className="brew-btn brew-btn--primary" style={{ marginTop: '1rem' }} onClick={() => navigate('/cafes')}>
-                        Browse Cafés
-                    </button>
+            <div style={{padding: '20px'}}>
+                <div className="sw-toggle-container">
+                    <button className={`sw-toggle-btn ${activeTab === 'DINE_IN' ? 'active' : ''}`} onClick={() => setActiveTab('DINE_IN')}>Dine-In</button>
+                    <button className={`sw-toggle-btn ${activeTab === 'TAKEAWAY' ? 'active' : ''}`} onClick={() => setActiveTab('TAKEAWAY')}>Takeaway</button>
                 </div>
-            ) : (
-                <div className="cards-grid">
-                    {filtered.map(order => (
-                        <div key={order.id} className="glass-card order-card glass-card--clickable"
-                            onClick={() => navigate(`/order-tracking/${order.id}`)}
-                        >
-                            <div className="order-card__header">
-                                <span className="order-card__ref">#{order.orderRef}</span>
-                                <span className={`status-badge status-badge--${order.status.toLowerCase()}`}>
-                                    {order.status}
-                                </span>
-                            </div>
-                            <div style={{ fontSize: '0.82rem', color: 'var(--brew-muted)', marginBottom: '0.5rem' }}>
-                                {order.orderType === 'DINE_IN' ? '🍽️ Dine-In' : '🥡 Takeaway'}
-                                {order.createdAt && ` • ${new Date(order.createdAt).toLocaleDateString()}`}
-                            </div>
-                            <div className="order-card__total">
-                                <span>Total</span>
-                                <span>₹{order.grandTotal}</span>
-                            </div>
+
+                <div style={{marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '15px'}}>
+                    {filtered.length === 0 ? (
+                        <div style={{textAlign: 'center', padding: '60px 0'}}>
+                            <div style={{fontSize: '3rem', marginBottom: '20px', opacity: 0.2}}>☕</div>
+                            <h3 style={{color: '#686b78'}}>No {activeTab.toLowerCase()} orders yet</h3>
+                            <button className="brew-btn brew-btn--primary" style={{marginTop: '20px', border: 'none', background: '#ff5200', color: '#fff', padding: '10px 25px', borderRadius: '10px'}} onClick={() => navigate('/customer-home')}>Browse Cafes</button>
                         </div>
-                    ))}
+                    ) : (
+                        filtered.map(order => (
+                            <div key={order.id} className="sw-form-card" style={{cursor: 'pointer'}} onClick={() => navigate(`/order-tracking/${order.id}`)}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                                    <div>
+                                        <div style={{fontWeight: 800, fontSize: '1rem', color: '#1c1c1c'}}>{order.cafe?.name || 'Cafe'}</div>
+                                        <div style={{fontSize: '0.8rem', color: '#686b78', marginTop: '4px'}}>{order.cafe?.city || 'Your City'}</div>
+                                    </div>
+                                    <div style={{textAlign: 'right'}}>
+                                        <div style={{fontWeight: 800, fontSize: '1rem'}}>₹{order.grandTotal}</div>
+                                        <div style={{fontSize: '0.75rem', fontWeight: 700, color: order.status === 'DELIVERED' ? '#10b981' : '#ff5200', marginTop: '4px'}}>{order.status}</div>
+                                    </div>
+                                </div>
+                                
+                                <div style={{marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #f1f1f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <div style={{fontSize: '0.85rem', color: '#686b78', display: 'flex', alignItems: 'center', gap: '6px'}}>
+                                        <FaClock size={12} /> {new Date(order.createdAt).toLocaleDateString()}
+                                    </div>
+                                    <button style={{background: 'none', border: 'none', color: '#ff5200', fontWeight: 700, fontSize: '0.85rem'}}>Track Order →</button>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
-            )}
+            </div>
+            <BottomNav />
         </div>
-    )
+    );
 }
