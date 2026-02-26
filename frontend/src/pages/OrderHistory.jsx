@@ -33,7 +33,7 @@ export default function OrderHistory() {
     return (
         <div className="customer-home" style={{paddingBottom: '100px', background: '#f8f8f8', minHeight: '100vh'}}>
             <div style={{padding: '20px', background: '#fff', display: 'flex', alignItems: 'center', gap: '15px', position: 'sticky', top: 0, zIndex: 100}}>
-                <FaChevronLeft onClick={() => navigate('/customer-home')} style={{cursor: 'pointer'}} />
+                <FaChevronLeft onClick={() => navigate('/customer-dashboard')} style={{cursor: 'pointer'}} />
                 <h2 style={{margin: 0, fontSize: '1.1rem', fontWeight: 800}}>My Orders</h2>
             </div>
 
@@ -48,7 +48,7 @@ export default function OrderHistory() {
                         <div style={{textAlign: 'center', padding: '60px 0'}}>
                             <div style={{fontSize: '3rem', marginBottom: '20px', opacity: 0.2}}>☕</div>
                             <h3 style={{color: '#686b78'}}>No {activeTab.toLowerCase()} orders yet</h3>
-                            <button className="brew-btn brew-btn--primary" style={{marginTop: '20px', border: 'none', background: '#ff5200', color: '#fff', padding: '10px 25px', borderRadius: '10px'}} onClick={() => navigate('/customer-home')}>Browse Cafes</button>
+                            <button className="brew-btn brew-btn--primary" style={{marginTop: '20px', border: 'none', background: '#ff5200', color: '#fff', padding: '10px 25px', borderRadius: '10px'}} onClick={() => navigate('/customer-dashboard')}>Browse Cafes</button>
                         </div>
                     ) : (
                         filtered.map(order => (

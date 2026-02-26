@@ -28,6 +28,9 @@ public class OrderService {
     @Autowired
     private ReferenceGenerator referenceGenerator;
 
+    @Autowired
+    private EmailService emailService;
+
     @Transactional
     public Order placeOrder(Order order, List<OrderItem> items, User placedBy) {
         order.setOrderRef(referenceGenerator.generateOrderReference());
@@ -52,6 +55,14 @@ public class OrderService {
         }
 
         logStatusChange(savedOrder, "PLACED", placedBy, "Order placed");
+
+        // Send confirmation email
+        try {
+            emailService.sendOrderConfirmationEmail(placedBy.getEmail(), placedBy.getFirstName(), savedOrder.getOrderRef(), savedOrder.getGrandTotal());
+        } catch (Exception e) {
+            // Log but don't fail order placement if email fails
+            System.err.println("Email failed: " + e.getMessage());
+        }
 
         return savedOrder;
     }

@@ -313,6 +313,50 @@ export default function CafeOwnerDashboard() {
           </div>
         )}
 
+        {/* Orders View */}
+        {activeTab === "orders" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            {orders.length > 0 ? (
+              orders.map(order => (
+                <div key={order.id} className="card-premium" style={{ padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderLeft: `6px solid ${order.status === 'PLACED' ? '#f59e0b' : '#27ae60'}` }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: "1.1rem", color: "#111827" }}>Order #{order.orderRef}</div>
+                    <div style={{ display: "flex", gap: "12px", marginTop: "6px", fontSize: "0.82rem", color: "#6b7280", fontWeight: 500 }}>
+                      <span>{order.orderType}</span>
+                      <span>•</span>
+                      <span>{new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      {order.table && <span>• Table {order.table.tableNumber}</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#111827" }}>₹{order.grandTotal}</div>
+                      <div style={{ fontWeight: 700, fontSize: "0.7rem", marginTop: "4px", color: order.status === "PLACED" ? "#f59e0b" : "#27ae60", textTransform: "uppercase" }}>{order.status}</div>
+                    </div>
+                    {order.status === 'PLACED' && (
+                      <button 
+                        onClick={async () => {
+                          try {
+                            await api.put(`/cafe-owner/cafes/${selectedCafe.id}/orders/${order.id}/confirm`);
+                            toast.success("Order confirmed!");
+                            loadCafeData(selectedCafe.id);
+                          } catch (err) { toast.error("Failed to confirm"); }
+                        }}
+                        className="brew-btn brew-btn--primary" 
+                        style={{ padding: "8px 15px", fontSize: "0.75rem", borderRadius: '8px' }}
+                      >Confirm</button>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ textAlign: "center", padding: "60px", background: "#fff", borderRadius: "16px", color: "#8b6f63", border: '1px dashed #d4c0a8' }}>
+                No orders received yet.
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Menu View — Integrated with Categories */}
         {activeTab === "menu" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>

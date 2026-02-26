@@ -1,5 +1,6 @@
 package com.brewco.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -18,27 +19,37 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cafe_id", nullable = false)
+    @JsonIgnoreProperties({"owner", "documents", "menuCategories", "menuItems", "tables", "orders", "bookings", "staffAssignments", "hibernateLazyInitializer", "handler"})
     private Cafe cafe;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
+    @JsonIgnoreProperties({"password", "passwordHash", "ownedCafes", "governmentProof", "workExperiences", "orders", "bookings", "staffAssignments", "assignedOrders", "waitedOrders", "hibernateLazyInitializer", "handler"})
     private User customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_id")
+    @JsonIgnoreProperties({"cafe", "hibernateLazyInitializer", "handler"})
     private CafeTable table; // Nullable for takeaway
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id")
+    @JsonIgnoreProperties({"cafe", "customer", "table", "hibernateLazyInitializer", "handler"})
     private Booking booking;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_chef_id")
+    @JsonIgnoreProperties({"password", "passwordHash", "ownedCafes", "governmentProof", "workExperiences", "orders", "bookings", "staffAssignments", "assignedOrders", "waitedOrders", "hibernateLazyInitializer", "handler"})
     private User assignedChef;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_waiter_id")
+    @JsonIgnoreProperties({"password", "passwordHash", "ownedCafes", "governmentProof", "workExperiences", "orders", "bookings", "staffAssignments", "assignedOrders", "waitedOrders", "hibernateLazyInitializer", "handler"})
     private User assignedWaiter;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"order", "hibernateLazyInitializer", "handler"})
+    private java.util.List<OrderItem> items;
 
     @Column(name = "order_type", nullable = false)
     private String orderType; // DINE_IN, TAKEAWAY, DELIVERY (DELIVERY: code ready, not exposed in UI yet)

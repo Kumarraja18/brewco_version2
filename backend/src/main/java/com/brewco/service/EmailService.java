@@ -120,4 +120,32 @@ public class EmailService {
             e.printStackTrace();
         }
     }
+
+    public void sendOrderConfirmationEmail(String toEmail, String firstName, String orderRef, java.math.BigDecimal total) {
+        if (!isMailConfigured()) {
+            System.out.println("⚠ EMAIL NOT CONFIGURED — Order " + orderRef + " placed for " + toEmail);
+            return;
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("☕ Order Confirmed — #" + orderRef);
+            message.setText(
+                    "Hello " + firstName + ",\n\n" +
+                            "Thank you for ordering with Brew & Co!\n\n" +
+                            "Your order #" + orderRef + " has been received and is being processed.\n" +
+                            "Total Amount: ₹" + total + "\n\n" +
+                            "You can track your order live on our platform.\n\n" +
+                            "Enjoy your coffee! ☕\n\n" +
+                            "Best regards,\n" +
+                            "Brew & Co Team");
+
+            mailSender.send(message);
+            System.out.println("✅ Order confirmation sent to: " + toEmail);
+        } catch (Exception e) {
+            System.err.println("❌ Failed to send order email: " + e.getMessage());
+        }
+    }
 }

@@ -12,12 +12,14 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 
 // Customer Pages
-import CustomerDashboard from './pages/CustomerDashboard';
+import CustomerHome from './pages/CustomerHome';
 import CafeList from './pages/CafeList';
 import CafeDetail from './pages/CafeDetail';
 import OrderTracking from './pages/OrderTracking';
 import OrderHistory from './pages/OrderHistory';
 import ProfileCompletion from './pages/ProfileCompletion';
+import ReviewOrder from './pages/ReviewOrder';
+import Profile from './pages/Profile';
 
 // Cafe Owner Pages
 import CafeSetup from './pages/CafeSetup';
@@ -114,12 +116,15 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Customer Routes */}
-          <Route path="/customer-dashboard" element={<ProtectedRoute requiredRole="CUSTOMER"><CustomerDashboard /></ProtectedRoute>} />
+          <Route path="/customer-dashboard" element={<ProtectedRoute requiredRole="CUSTOMER"><CustomerHome /></ProtectedRoute>} />
           <Route path="/cafes" element={<CafeList />} />
           <Route path="/cafe/:cafeId" element={<CafeDetail />} />
+          <Route path="/review-order" element={<ProtectedRoute requiredRole="CUSTOMER"><ReviewOrder /></ProtectedRoute>} />
           <Route path="/order-tracking/:orderId" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderTracking /></ProtectedRoute>} />
           <Route path="/my-orders" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderHistory /></ProtectedRoute>} />
           <Route path="/my-bookings" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderHistory /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute requiredRole="CUSTOMER"><Profile /></ProtectedRoute>} />
+          <Route path="/search" element={<ProtectedRoute requiredRole="CUSTOMER"><CafeList /></ProtectedRoute>} />
           <Route path="/profile-completion" element={<ProfileCompletion />} />
 
           {/* Legacy routes (backward compat) */}

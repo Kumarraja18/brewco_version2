@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../api/axiosClient'
-import '../styles/dashboard.css'
+import { FaChevronLeft, FaClock, FaCheckCircle, FaMapMarkerAlt, FaReceipt, FaMotorcycle, FaUtensils, FaUser } from 'react-icons/fa'
+import '../styles/customer.css'
 
-// Full flow: Owner confirms → Waiter forwards → Chef prepares → Chef marks ready → Waiter delivers
 const STATUS_STEPS = [
-  { key: 'PLACED', label: 'Placed', icon: '📝' },
-  { key: 'CONFIRMED', label: 'Confirmed', icon: '✅' },
-  { key: 'SENT_TO_KITCHEN', label: 'In Kitchen', icon: '🍳' },
-  { key: 'PREPARING', label: 'Preparing', icon: '🔥' },
-  { key: 'READY', label: 'Ready', icon: '🔔' },
-  { key: 'DELIVERED', label: 'Delivered', icon: '🎉' }
+  { key: 'PLACED', label: 'Order Placed', icon: <FaReceipt /> },
+  { key: 'CONFIRMED', label: 'Confirmed', icon: <FaCheckCircle /> },
+  { key: 'SENT_TO_KITCHEN', label: 'In Kitchen', icon: <FaUtensils /> },
+  { key: 'PREPARING', label: 'Preparing', icon: <FaClock /> },
+  { key: 'READY', label: 'Ready for Pickup', icon: <FaCheckCircle /> },
+  { key: 'DELIVERED', label: 'Served', icon: <FaUser /> }
 ]
 
 export default function OrderTracking() {
@@ -21,7 +21,7 @@ export default function OrderTracking() {
 
   useEffect(() => {
     loadOrder()
-    const interval = setInterval(loadOrder, 8000) // Poll every 8s
+    const interval = setInterval(loadOrder, 5000) // Poll every 5s for real-time feel
     return () => clearInterval(interval)
   }, [orderId])
 
@@ -33,14 +33,11 @@ export default function OrderTracking() {
     setLoading(false)
   }
 
-  if (loading) return <div className="dashboard-page"><div className="brew-spinner" /></div>
+  if (loading) return <div className="brew-spinner-container"><div className="brew-spinner" /></div>
   if (!order) return (
-    <div className="dashboard-page">
-      <div className="empty-state">
-        <div className="empty-state__icon">📦</div>
-        <div className="empty-state__text">Order not found</div>
-        <button className="brew-btn brew-btn--primary" onClick={() => navigate('/customer-dashboard')}>Go to Dashboard</button>
-      </div>
+    <div style={{ textAlign: 'center', padding: '100px' }}>
+      <h3>Order not found</h3>
+      <button className="brew-btn brew-btn--primary" onClick={() => navigate('/customer-dashboard')}>Back to Home</button>
     </div>
   )
 
@@ -48,107 +45,112 @@ export default function OrderTracking() {
   const isCancelled = order.status === 'CANCELLED'
 
   return (
-    <div className="dashboard-page" style={{ maxWidth: '750px' }}>
-      <div className="dashboard-page__header">
-        <h1 className="dashboard-page__title">Order #{order.orderRef}</h1>
-        <p className="dashboard-page__subtitle">
-          {order.orderType === 'DINE_IN' ? '🍽️ Dine-In' : '🥡 Takeaway'}
-          {order.createdAt && ` • Placed ${new Date(order.createdAt).toLocaleString()}`}
-        </p>
+    <div className="customer-home" style={{ background: '#f8f9fa', minHeight: '100vh', paddingBottom: '50px' }}>
+      {/* Header */}
+      <div style={{ background: '#fff', padding: '20px', display: 'flex', alignItems: 'center', gap: '15px', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 100 }}>
+        <FaChevronLeft onClick={() => navigate('/my-orders')} style={{ cursor: 'pointer' }} />
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>Order Tracking</h1>
+          <div style={{ fontSize: '0.75rem', color: '#686b78', fontWeight: 600 }}>#{order.orderRef}</div>
+        </div>
       </div>
 
-      {/* Status Timeline */}
-      {!isCancelled && (
-        <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontWeight: 700, color: 'var(--brew-dark)', marginBottom: '1.5rem' }}>Order Progress</h3>
-          <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', padding: '0 0.5rem' }}>
-            {/* Progress bar background */}
-            <div style={{
-              position: 'absolute', top: '20px', left: '2rem', right: '2rem',
-              height: '3px', background: 'var(--brew-border)', zIndex: 0
-            }} />
-            {/* Progress bar fill */}
-            <div style={{
-              position: 'absolute', top: '20px', left: '2rem',
-              height: '3px',
-              width: currentStep >= 0
-                ? `${Math.max(0, currentStep / (STATUS_STEPS.length - 1)) * (100 - 8)}%`
-                : '0%',
-              background: 'var(--brew-gradient)', zIndex: 1,
-              transition: 'width 0.6s ease', borderRadius: '2px'
-            }} />
-            {STATUS_STEPS.map((step, i) => (
-              <div key={step.key} style={{ textAlign: 'center', zIndex: 2, flex: 1 }}>
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '50%', margin: '0 auto 0.5rem',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: i <= currentStep ? '1.1rem' : '0.75rem', fontWeight: 700,
-                  background: i <= currentStep ? 'var(--brew-gradient)' : '#fff',
-                  color: i <= currentStep ? '#fff' : 'var(--brew-muted)',
-                  border: i <= currentStep ? 'none' : '2px solid var(--brew-border)',
-                  transition: 'all 0.3s ease',
-                  boxShadow: i === currentStep ? '0 0 0 4px rgba(139,94,60,0.2)' : 'none'
-                }}>
-                  {i <= currentStep ? step.icon : i + 1}
-                </div>
-                <div style={{
-                  fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.3px',
-                  color: i <= currentStep ? 'var(--brew-dark)' : 'var(--brew-muted)'
-                }}>
-                  {step.label}
-                </div>
+      <div className="customer-container" style={{ maxWidth: '600px', marginTop: '20px' }}>
+        {/* Café Card */}
+        <div className="sw-form-card" style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'center' }}>
+          <img src={order.cafe?.profileImageUrl || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=100'} 
+            style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} 
+          />
+          <div>
+            <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>{order.cafe?.name}</h2>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#686b78' }}>{order.cafe?.address}, {order.cafe?.city}</p>
+          </div>
+        </div>
+
+        {/* Status Timeline */}
+        {!isCancelled ? (
+          <div className="sw-form-card" style={{ marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '25px', color: '#1c1c1c' }}>Live Status</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+              {STATUS_STEPS.map((step, i) => {
+                const isActive = i <= currentStep;
+                const isCurrent = i === currentStep;
+                return (
+                  <div key={step.key} style={{ display: 'flex', gap: '20px', position: 'relative', paddingBottom: i === STATUS_STEPS.length - 1 ? 0 : '30px' }}>
+                    {/* Line */}
+                    {i !== STATUS_STEPS.length - 1 && (
+                      <div style={{
+                        position: 'absolute', left: '15px', top: '30px', bottom: 0, width: '2px',
+                        background: i < currentStep ? '#60b246' : '#e9e9eb'
+                      }} />
+                    )}
+                    {/* Dot/Icon */}
+                    <div style={{
+                      width: '32px', height: '32px', borderRadius: '50%', background: isActive ? '#60b246' : '#fff',
+                      border: isActive ? 'none' : '2px solid #e9e9eb', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: isActive ? '#fff' : '#d4d5d9', zIndex: 1, fontSize: '0.9rem'
+                    }}>
+                      {step.icon}
+                    </div>
+                    {/* Text */}
+                    <div style={{ paddingTop: '5px' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: isActive ? '#1c1c1c' : '#93959f' }}>{step.label}</div>
+                      {isCurrent && (
+                        <div style={{ fontSize: '0.8rem', color: '#686b78', marginTop: '4px' }}>
+                          {order.status === 'PLACED' && 'Waiting for café to accept...'}
+                          {order.status === 'CONFIRMED' && 'Café has accepted your order.'}
+                          {order.status === 'PREPARING' && 'Chef is working their magic!'}
+                          {order.status === 'READY' && 'Your order is hot and ready!'}
+                          {order.status === 'DELIVERED' && 'Order has been served. Enjoy!'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="sw-form-card" style={{ marginBottom: '20px', textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '15px' }}>❌</div>
+            <h3 style={{ color: '#dc2626', fontWeight: 800 }}>Order Cancelled</h3>
+            <p style={{ color: '#686b78', fontSize: '0.9rem' }}>This order was cancelled by the café or user.</p>
+          </div>
+        )}
+
+        {/* Items Summary */}
+        <div className="sw-form-card" style={{ marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '15px' }}>Order Summary</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {order.items?.map(item => (
+              <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                <div style={{ color: '#3d4152', fontWeight: 600 }}>{item.menuItem?.name} x {item.quantity}</div>
+                <div style={{ color: '#3d4152' }}>₹{item.subTotal}</div>
               </div>
             ))}
-          </div>
-
-          {/* Current status message */}
-          <div style={{ textAlign: 'center', marginTop: '1.5rem', padding: '1rem', borderRadius: '12px', background: 'rgba(139,94,60,0.06)' }}>
-            {order.status === 'PLACED' && <p style={{ color: 'var(--brew-brown)', fontWeight: 600 }}>📝 Your order has been placed. Waiting for the café owner to confirm.</p>}
-            {order.status === 'CONFIRMED' && <p style={{ color: 'var(--brew-brown)', fontWeight: 600 }}>✅ Order confirmed! A waiter is picking up your order.</p>}
-            {order.status === 'SENT_TO_KITCHEN' && <p style={{ color: 'var(--brew-brown)', fontWeight: 600 }}>🍳 Your order has been sent to the kitchen. The chef will start soon!</p>}
-            {order.status === 'PREPARING' && <p style={{ color: 'var(--brew-brown)', fontWeight: 600 }}>🔥 The chef is preparing your order right now!</p>}
-            {order.status === 'READY' && <p style={{ color: 'var(--brew-brown)', fontWeight: 600 }}>🔔 Your order is ready! The waiter is bringing it to you.</p>}
-            {order.status === 'DELIVERED' && <p style={{ color: '#16a34a', fontWeight: 600 }}>🎉 Order delivered! Enjoy your meal!</p>}
+            <div style={{ marginTop: '10px', paddingTop: '15px', borderTop: '1px solid #f1f1f6', display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
+              <span>Total Paid</span>
+              <span>₹{order.grandTotal}</span>
+            </div>
           </div>
         </div>
-      )}
 
-      {isCancelled && (
-        <div className="glass-card" style={{ marginBottom: '1.5rem', textAlign: 'center', padding: '2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>❌</div>
-          <h3 style={{ color: '#dc2626', fontWeight: 700 }}>Order Cancelled</h3>
+        {/* Order Details */}
+        <div className="sw-form-card">
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '15px' }}>Bill Details</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', fontSize: '0.85rem', color: '#686b78' }}>
+            <div>Order Type:</div>
+            <div style={{ fontWeight: 700, color: '#1c1c1c' }}>{order.orderType}</div>
+            <div>Payment:</div>
+            <div style={{ fontWeight: 700, color: '#1c1c1c' }}>{order.paymentStatus}</div>
+            {order.table && (
+              <>
+                <div>Table:</div>
+                <div style={{ fontWeight: 700, color: '#1c1c1c' }}>Table {order.table.tableNumber}</div>
+              </>
+            )}
+          </div>
         </div>
-      )}
-
-      {/* Order Details */}
-      <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontWeight: 700, color: 'var(--brew-dark)', marginBottom: '1rem' }}>Order Details</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.88rem' }}>
-          <div><span style={{ color: 'var(--brew-muted)' }}>Status:</span></div>
-          <div><span className={`status-badge status-badge--${order.status.toLowerCase().replace('_', '-')}`}>{order.status.replace('_', ' ')}</span></div>
-          <div><span style={{ color: 'var(--brew-muted)' }}>Subtotal:</span></div>
-          <div style={{ fontWeight: 600 }}>₹{order.totalAmount}</div>
-          {parseFloat(order.taxAmount) > 0 && <>
-            <div><span style={{ color: 'var(--brew-muted)' }}>Tax:</span></div>
-            <div>₹{order.taxAmount}</div>
-          </>}
-          <div><span style={{ color: 'var(--brew-muted)' }}>Grand Total:</span></div>
-          <div style={{ fontWeight: 800, color: 'var(--brew-brown)', fontSize: '1.1rem' }}>₹{order.grandTotal}</div>
-          <div><span style={{ color: 'var(--brew-muted)' }}>Payment:</span></div>
-          <div><span className={`status-badge status-badge--${order.paymentStatus?.toLowerCase()}`}>{order.paymentStatus}</span></div>
-        </div>
-      </div>
-
-      {order.specialInstructions && (
-        <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontWeight: 700, color: 'var(--brew-dark)', marginBottom: '0.5rem' }}>Special Instructions</h3>
-          <p style={{ color: 'var(--brew-muted)', fontSize: '0.88rem' }}>{order.specialInstructions}</p>
-        </div>
-      )}
-
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <button className="brew-btn brew-btn--secondary" onClick={() => navigate('/my-orders')}>← All Orders</button>
-        <button className="brew-btn brew-btn--secondary" onClick={() => navigate('/customer-dashboard')}>Dashboard</button>
       </div>
     </div>
   )
