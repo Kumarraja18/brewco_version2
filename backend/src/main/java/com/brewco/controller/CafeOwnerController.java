@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cafe-owner")
-@PreAuthorize("hasRole('CAFE_OWNER')")
+@PreAuthorize("hasAnyRole('CAFE_OWNER', 'CHEF', 'WAITER')")
 public class CafeOwnerController {
 
     @Autowired
@@ -46,9 +46,23 @@ public class CafeOwnerController {
     }
 
     private Cafe getOwnedCafe(Long cafeId, Authentication auth) throws Exception {
-        User owner = getOwner(auth);
-        return cafeService.getCafeByIdAndOwner(cafeId, owner)
-                .orElseThrow(() -> new Exception("Cafe not found or you are not the owner"));
+        User user = getOwner(auth);
+        
+        // If it's the owner, check findByIdAndOwner
+        if ("CAFE_OWNER".equals(user.getRole())) {
+            return cafeService.getCafeByIdAndOwner(cafeId, user)
+                    .orElseThrow(() -> new Exception("Cafe not found or you are not the owner"));
+        }
+        
+        // If it's a staff member (CHEF/WAITER), check their assignment
+        StaffAssignment assignment = staffService.getActiveAssignmentForStaff(user)
+                .orElseThrow(() -> new Exception("You are not assigned to any cafe"));
+        
+        if (!assignment.getCafe().getId().equals(cafeId)) {
+            throw new Exception("You are not authorized to access this cafe's data");
+        }
+        
+        return assignment.getCafe();
     }
 
     // ==================== Cafe CRUD ====================
@@ -60,10 +74,52 @@ public class CafeOwnerController {
     }
 
     @PostMapping("/cafes")
-    public ResponseEntity<?> createCafe(@RequestBody Cafe cafe, Authentication auth) {
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> createCafe(@RequestBody Map<String, Object> payload, Authentication auth) {
         try {
             User owner = getOwner(auth);
+            
+            Cafe cafe = new Cafe();
             cafe.setOwner(owner);
+            cafe.setName(payload.get("name") != null ? (String) payload.get("name") : "New Cafe");
+            cafe.setDescription((String) payload.get("description"));
+            
+            // Map address fields from setup wizard
+            String street = (String) payload.get("street");
+            String city = (String) payload.get("city");
+            String state = (String) payload.get("state");
+            String pincode = (String) payload.get("pincode");
+            
+            cafe.setAddress(street != null ? street : "Unknown Street");
+            cafe.setCity(city != null ? city : "Unknown City");
+            cafe.setState(state);
+            cafe.setZipCode(pincode);
+            
+            cafe.setContactNumber((String) payload.get("contactNumber"));
+            cafe.setEmail((String) payload.get("email"));
+            
+            try {
+                if (payload.get("openingTime") != null) {
+                    cafe.setOpeningTime(java.time.LocalTime.parse(payload.get("openingTime").toString()));
+                } else {
+                    cafe.setOpeningTime(java.time.LocalTime.of(9, 0));
+                }
+                
+                if (payload.get("closingTime") != null) {
+                    cafe.setClosingTime(java.time.LocalTime.parse(payload.get("closingTime").toString()));
+                } else {
+                    cafe.setClosingTime(java.time.LocalTime.of(22, 0));
+                }
+            } catch (Exception e) {
+                cafe.setOpeningTime(java.time.LocalTime.of(9, 0));
+                cafe.setClosingTime(java.time.LocalTime.of(22, 0));
+            }
+            
+            cafe.setGstNumber((String) payload.get("gstNumber"));
+            cafe.setFssaiLicense((String) payload.get("fssaiNumber"));
+            cafe.setIsVerified(false);
+            cafe.setIsActive(true);
+
             Cafe saved = cafeService.createCafe(cafe);
             return ResponseEntity.ok(Map.of("message", "Cafe application submitted for verification", "cafe", saved));
         } catch (Exception e) {
@@ -93,7 +149,7 @@ public class CafeOwnerController {
             if (updatedCafe.getEmail() != null)
                 cafe.setEmail(updatedCafe.getEmail());
             if (updatedCafe.getOpeningTime() != null)
-                cafe.setOpeningTime(updatedCafe.getOpeningTime());
+            cafe.setOpeningTime(updatedCafe.getOpeningTime());
             if (updatedCafe.getClosingTime() != null)
                 cafe.setClosingTime(updatedCafe.getClosingTime());
             if (updatedCafe.getGstNumber() != null)
@@ -103,7 +159,7 @@ public class CafeOwnerController {
             if (updatedCafe.getFssaiLicense() != null)
                 cafe.setFssaiLicense(updatedCafe.getFssaiLicense());
             if (updatedCafe.getProfileImageUrl() != null)
-                cafe.setProfileImageUrl(updatedCafe.getProfileImageUrl());
+            cafe.setProfileImageUrl(updatedCafe.getProfileImageUrl());
 
             Cafe saved = cafeService.updateCafe(cafe);
             return ResponseEntity.ok(saved);
@@ -181,13 +237,18 @@ public class CafeOwnerController {
     }
 
     @PostMapping("/cafes/{cafeId}/menu/categories")
-    public ResponseEntity<?> createCategory(@PathVariable("cafeId") Long cafeId, @RequestBody MenuCategory category,
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> createCategory(@PathVariable("cafeId") Long cafeId, @RequestBody Map<String, Object> payload,
             Authentication auth) {
         try {
             Cafe cafe = getOwnedCafe(cafeId, auth);
+            MenuCategory category = new MenuCategory();
             category.setCafe(cafe);
-            if (category.getIsActive() == null)
-                category.setIsActive(true);
+            category.setName((String) payload.get("name"));
+            category.setDisplayOrder(payload.get("displayOrder") != null ? Integer.parseInt(payload.get("displayOrder").toString()) : 0);
+            category.setIsActive(payload.get("isActive") != null ? (Boolean) payload.get("isActive") : true);
+            category.setDescription((String) payload.get("description"));
+            
             return ResponseEntity.ok(menuService.createCategory(category));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -240,17 +301,37 @@ public class CafeOwnerController {
     }
 
     @PostMapping("/cafes/{cafeId}/menu/items")
-    public ResponseEntity<?> createMenuItem(@PathVariable("cafeId") Long cafeId, @RequestBody MenuItem item,
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> createMenuItem(@PathVariable("cafeId") Long cafeId, @RequestBody Map<String, Object> payload,
             Authentication auth) {
         try {
             Cafe cafe = getOwnedCafe(cafeId, auth);
+            
+            MenuItem item = new MenuItem();
             item.setCafe(cafe);
-            if (item.getIsAvailable() == null)
-                item.setIsAvailable(true);
-            if (item.getIsAddon() == null)
-                item.setIsAddon(false);
-            if (item.getAvgRating() == null)
-                item.setAvgRating(BigDecimal.ZERO);
+            item.setName((String) payload.get("name"));
+            item.setDescription((String) payload.get("description"));
+            item.setType((String) payload.get("type"));
+            
+            if (payload.get("price") != null) {
+                item.setPrice(new BigDecimal(payload.get("price").toString()));
+            } else {
+                throw new Exception("Price is required");
+            }
+
+            if (payload.get("categoryId") != null) {
+                Long catId = Long.valueOf(payload.get("categoryId").toString());
+                item.setCategory(menuService.getCategoryById(catId).orElseThrow(() -> new Exception("Category not found")));
+            } else if (payload.get("category") != null && ((Map)payload.get("category")).get("id") != null) {
+                Long catId = Long.valueOf(((Map)payload.get("category")).get("id").toString());
+                item.setCategory(menuService.getCategoryById(catId).orElseThrow(() -> new Exception("Category not found")));
+            }
+
+            item.setIsAvailable(payload.get("isAvailable") != null ? (Boolean) payload.get("isAvailable") : true);
+            item.setIsAddon(payload.get("isAddon") != null ? (Boolean) payload.get("isAddon") : false);
+            item.setAvgRating(BigDecimal.ZERO);
+            item.setImageUrl((String) payload.get("imageUrl"));
+
             return ResponseEntity.ok(menuService.createItem(item));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -309,6 +390,7 @@ public class CafeOwnerController {
     }
 
     @PostMapping("/cafes/{cafeId}/tables")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> createTable(@PathVariable("cafeId") Long cafeId, @RequestBody CafeTable table,
             Authentication auth) {
         try {
@@ -325,6 +407,7 @@ public class CafeOwnerController {
     }
 
     @PutMapping("/cafes/{cafeId}/tables/{tableId}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> updateTable(@PathVariable("cafeId") Long cafeId, @PathVariable("tableId") Long tableId,
             @RequestBody CafeTable updated, Authentication auth) {
         try {

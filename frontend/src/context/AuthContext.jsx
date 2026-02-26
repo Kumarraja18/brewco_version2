@@ -11,24 +11,24 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                // Use raw axios (NOT the interceptor-wrapped `api`) to avoid
-                // triggering the 401 → refresh → redirect loop for session checks
-                const response = await axios.get('http://localhost:8080/api/auth/me', {
-                    withCredentials: true
-                });
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+                const response = await axios.get(
+                    `${apiUrl}/auth/me`,
+                    { withCredentials: true }
+                );
                 setUser(response.data);
-            } catch (error) {
-                // 401 means "not logged in" — perfectly fine, just set user to null
+            } catch {
                 setUser(null);
             } finally {
                 setLoading(false);
             }
         };
+
         checkAuthStatus();
     }, []);
 
-    const login = async (email, password) => {
-        const response = await api.post('/auth/login', { email, password });
+    const login = async (email, password, role) => {
+        const response = await api.post('/auth/login', { email, password, role });
         if (response.data.user) {
             setUser(response.data.user);
         }
@@ -42,8 +42,6 @@ export const AuthProvider = ({ children }) => {
             console.error('Logout error', error);
         } finally {
             setUser(null);
-            // Don't use window.location.href — it causes full page reload
-            // Navigation is handled by the component that calls logout
         }
     };
 
@@ -53,7 +51,17 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user, login, logout, register, setUser }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                loading,
+                isAuthenticated: !!user,
+                login,
+                logout,
+                register,
+                setUser
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

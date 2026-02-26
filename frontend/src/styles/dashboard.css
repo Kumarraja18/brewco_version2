@@ -1,1064 +1,133 @@
-/* ===================================================
-   BREW & CO — DASHBOARD DESIGN SYSTEM
-   Warm brown/cream light theme + glassmorphism cards
-   =================================================== */
+/* ============================================================
+   BREW & CO — PREMIUM DASHBOARD STYLES
+   Inspired by KCofee Guidance UI
+   ============================================================ */
 
-/* === CSS Variables === */
 :root {
-    --brew-brown: #6F4E37;
-    --brew-dark: #3b2a20;
-    --brew-cream: #fdfbf7;
-    --brew-warm: #f5ede3;
-    --brew-gold: #A67C52;
-    --brew-light-gold: #d4b896;
-    --brew-muted: #8b6f63;
-    --brew-border: rgba(166, 124, 82, 0.2);
-    --brew-shadow: rgba(111, 78, 55, 0.12);
-    --brew-glass: rgba(255, 255, 255, 0.75);
-    --brew-gradient: linear-gradient(135deg, #6F4E37, #A67C52);
-    --brew-radius: 16px;
-    --brew-radius-sm: 10px;
-    --brew-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --brown: #6f4e37;
+  --cream: #f5e9dc;
+  --accent: #a67c52;
+  --dark: #2e241f;
+  --muted: #8b6f63;
+  --light-cream: #faf8f5;
+  --very-light: #ffffff;
+  --danger: #c0392b;
+  --success: #27ae60;
+  --shadow-sm: 0 2px 8px rgba(42,30,24,.08);
+  --shadow-md: 0 6px 18px rgba(42,30,24,.12);
+  --shadow-lg: 0 12px 32px rgba(42,30,24,.15);
 }
 
-/* === Dashboard Layout === */
-.dashboard-page {
-    min-height: calc(100vh - 200px);
-    background: var(--brew-cream);
-    padding: 2rem 1.5rem;
-    max-width: 1200px;
-    margin: 0 auto;
+/* Hide scrollbars but keep functionality */
+.hide-scrollbar::-webkit-scrollbar { display: none !important; }
+.hide-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+
+/* Global Fonts & Body */
+body {
+  font-family: 'Georgia', serif;
+  background: #fdfaf7;
+  color: var(--dark);
 }
 
-.dashboard-page__header {
-    margin-bottom: 2rem;
+/* Sidebar Customization */
+.sidebar-premium {
+  background: linear-gradient(180deg, var(--brown) 0%, var(--dark) 100%) !important;
+  border-right: 3px solid var(--accent);
 }
 
-.dashboard-page__title {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--brew-dark);
-    letter-spacing: -0.5px;
-    margin-bottom: 0.3rem;
+.nav-item-premium {
+  margin: 4px 15px !important;
+  padding: 12px 18px !important;
+  font-family: 'Georgia', serif;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease !important;
 }
 
-.dashboard-page__subtitle {
-    font-size: 0.95rem;
-    color: var(--brew-muted);
-    font-weight: 400;
+.nav-item-premium:hover {
+  background: rgba(255,255,255,0.1) !important;
+  transform: translateX(5px);
 }
 
-/* === Glass Card === */
-.glass-card {
-    background: var(--brew-glass);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--brew-border);
-    border-radius: var(--brew-radius);
-    padding: 1.5rem;
-    transition: var(--brew-transition);
-    box-shadow: 0 4px 24px var(--brew-shadow);
+.nav-item-premium.active {
+  background: var(--accent) !important;
+  box-shadow: var(--shadow-md);
 }
 
-.glass-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(111, 78, 55, 0.18);
+/* Card Styling */
+.card-premium {
+  background: #fff;
+  border-radius: 16px !important;
+  border: 1px solid rgba(166,124,82,0.1) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all 0.3s ease !important;
+  overflow: hidden;
 }
 
-.glass-card--clickable {
-    cursor: pointer;
+.card-premium:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg) !important;
+  border-color: var(--accent) !important;
 }
 
-.glass-card--accent {
-    border-left: 4px solid var(--brew-brown);
-}
-
-/* === Stats Grid === */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: var(--brew-glass);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--brew-border);
-    border-radius: var(--brew-radius);
-    padding: 1.25rem 1.5rem;
-    text-align: center;
-    transition: var(--brew-transition);
-    box-shadow: 0 4px 16px var(--brew-shadow);
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(111, 78, 55, 0.16);
-}
-
-.stat-card__icon {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
-}
-
-.stat-card__value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--brew-dark);
-    line-height: 1;
-    margin-bottom: 0.25rem;
-}
-
-.stat-card__label {
-    font-size: 0.8rem;
-    color: var(--brew-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* === Section Headers === */
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.section-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--brew-dark);
-}
-
-/* === Buttons === */
+/* Buttons */
 .brew-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 30px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--brew-transition);
-    font-family: inherit;
-    letter-spacing: 0.3px;
+  font-family: 'Georgia', serif !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  transition: all 0.3s !important;
 }
 
 .brew-btn--primary {
-    background: var(--brew-gradient);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(111, 78, 55, 0.25);
+  background: linear-gradient(135deg, var(--brown) 0%, var(--accent) 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(111,78,55,0.3) !important;
 }
 
 .brew-btn--primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(111, 78, 55, 0.35);
-}
-
-.brew-btn--secondary {
-    background: var(--brew-warm);
-    color: var(--brew-brown);
-    border: 1px solid var(--brew-border);
-}
-
-.brew-btn--secondary:hover {
-    background: #efe5d8;
-}
-
-.brew-btn--danger {
-    background: #fee2e2;
-    color: #dc2626;
-    border: 1px solid rgba(220, 38, 38, 0.15);
-}
-
-.brew-btn--danger:hover {
-    background: #fecaca;
-}
-
-.brew-btn--success {
-    background: #dcfce7;
-    color: #16a34a;
-    border: 1px solid rgba(22, 163, 74, 0.15);
-}
-
-.brew-btn--success:hover {
-    background: #bbf7d0;
-}
-
-.brew-btn--sm {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.78rem;
-}
-
-.brew-btn--lg {
-    padding: 0.8rem 2rem;
-    font-size: 0.95rem;
-}
-
-.brew-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-/* === Status Badges === */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.status-badge--placed {
-    background: #FEF3C7;
-    color: #92400E;
-}
-
-.status-badge--confirmed {
-    background: #DBEAFE;
-    color: #1E40AF;
-}
-
-.status-badge--preparing {
-    background: #FED7AA;
-    color: #C2410C;
-}
-
-.status-badge--ready {
-    background: #D1FAE5;
-    color: #065F46;
-}
-
-.status-badge--delivered {
-    background: #E0E7FF;
-    color: #3730A3;
-}
-
-.status-badge--cancelled {
-    background: #FEE2E2;
-    color: #991B1B;
-}
-
-.status-badge--available {
-    background: #D1FAE5;
-    color: #065F46;
-}
-
-.status-badge--booked {
-    background: #FEF3C7;
-    color: #92400E;
-}
-
-.status-badge--occupied {
-    background: #FEE2E2;
-    color: #991B1B;
-}
-
-.status-badge--pending {
-    background: #FEF3C7;
-    color: #92400E;
-}
-
-.status-badge--active {
-    background: #D1FAE5;
-    color: #065F46;
-}
-
-.status-badge--inactive {
-    background: #F3F4F6;
-    color: #6B7280;
-}
-
-.status-badge--verified {
-    background: #D1FAE5;
-    color: #065F46;
-}
-
-/* === Data Table === */
-.brew-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    background: var(--brew-glass);
-    border-radius: var(--brew-radius);
-    border: 1px solid var(--brew-border);
-    overflow: hidden;
-}
-
-.brew-table th {
-    background: var(--brew-warm);
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--brew-brown);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.brew-table td {
-    padding: 0.75rem 1rem;
-    font-size: 0.88rem;
-    color: var(--brew-dark);
-    border-top: 1px solid var(--brew-border);
-}
-
-.brew-table tr:hover td {
-    background: rgba(245, 237, 227, 0.5);
-}
-
-/* === Cards Grid === */
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.25rem;
-}
-
-.cards-grid--sm {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-}
-
-/* === Form Elements === */
-.brew-input {
-    width: 100%;
-    padding: 0.65rem 0.9rem;
-    background: var(--brew-cream);
-    border: 1px solid var(--brew-border);
-    border-radius: var(--brew-radius-sm);
-    font-size: 0.88rem;
-    color: var(--brew-dark);
-    font-family: inherit;
-    transition: var(--brew-transition);
-    box-sizing: border-box;
-}
-
-.brew-input:focus {
-    outline: none;
-    background: #fff;
-    border-color: var(--brew-brown);
-    box-shadow: 0 0 0 4px rgba(111, 78, 55, 0.1);
-}
-
-.brew-select {
-    width: 100%;
-    padding: 0.65rem 0.9rem;
-    background: var(--brew-cream);
-    border: 1px solid var(--brew-border);
-    border-radius: var(--brew-radius-sm);
-    font-size: 0.88rem;
-    color: var(--brew-dark);
-    font-family: inherit;
-    cursor: pointer;
-}
-
-.brew-label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--brew-brown);
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    margin-bottom: 0.4rem;
-}
-
-.brew-field {
-    margin-bottom: 1rem;
-}
-
-.brew-field-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-/* === Modal === */
-.brew-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.2s ease;
-}
-
-.brew-modal {
-    background: #fff;
-    border-radius: 20px;
-    padding: 2rem;
-    max-width: 500px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15);
-    animation: slideUp 0.3s ease;
-}
-
-.brew-modal__title {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--brew-dark);
-    margin-bottom: 1.5rem;
-}
-
-.brew-modal__actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
-    margin-top: 1.5rem;
-}
-
-/* === Tabs === */
-.brew-tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--brew-warm);
-    padding: 4px;
-    border-radius: 30px;
-    margin-bottom: 1.5rem;
-}
-
-.brew-tab {
-    flex: 1;
-    padding: 0.6rem 1rem;
-    border: none;
-    background: transparent;
-    color: var(--brew-muted);
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 24px;
-    transition: var(--brew-transition);
-    font-family: inherit;
-}
-
-.brew-tab:hover {
-    color: var(--brew-brown);
-}
-
-.brew-tab--active {
-    background: var(--brew-gradient);
-    color: #fff;
-    font-weight: 700;
-    box-shadow: 0 2px 8px rgba(111, 78, 55, 0.25);
-}
-
-/* === Empty State === */
-.empty-state {
-    text-align: center;
-    padding: 3rem 2rem;
-    color: var(--brew-muted);
-}
-
-.empty-state__icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-}
-
-.empty-state__text {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--brew-dark);
-}
-
-.empty-state__subtext {
-    font-size: 0.85rem;
-    color: var(--brew-muted);
-}
-
-/* === Order Card === */
-.order-card {
-    position: relative;
-}
-
-.order-card__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-}
-
-.order-card__ref {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--brew-dark);
-}
-
-.order-card__time {
-    font-size: 0.75rem;
-    color: var(--brew-muted);
-}
-
-.order-card__items {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 0.75rem 0;
-}
-
-.order-card__items li {
-    padding: 0.35rem 0;
-    font-size: 0.85rem;
-    color: var(--brew-dark);
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed var(--brew-border);
-}
-
-.order-card__items li:last-child {
-    border-bottom: none;
-}
-
-.order-card__total {
-    display: flex;
-    justify-content: space-between;
-    font-weight: 700;
-    color: var(--brew-dark);
-    padding-top: 0.5rem;
-    border-top: 2px solid var(--brew-border);
-    margin-top: 0.5rem;
-}
-
-.order-card__actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-/* === Cafe Card (Customer View) === */
-.cafe-card {
-    overflow: hidden;
-    padding: 0;
-}
-
-.cafe-card__image {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    background: var(--brew-warm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-}
-
-.cafe-card__image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.cafe-card__body {
-    padding: 1.25rem;
-}
-
-.cafe-card__name {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--brew-dark);
-    margin-bottom: 0.25rem;
-}
-
-.cafe-card__location {
-    font-size: 0.82rem;
-    color: var(--brew-muted);
-    margin-bottom: 0.5rem;
-}
-
-.cafe-card__rating {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--brew-gold);
-}
-
-.cafe-card__footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.75rem;
-}
-
-/* === Menu Item Card === */
-.menu-item-card {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-.menu-item-card__image {
-    width: 80px;
-    height: 80px;
-    border-radius: 12px;
-    background: var(--brew-warm);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    overflow: hidden;
-}
-
-.menu-item-card__image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.menu-item-card__info {
-    flex: 1;
-}
-
-.menu-item-card__name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--brew-dark);
-}
-
-.menu-item-card__desc {
-    font-size: 0.8rem;
-    color: var(--brew-muted);
-    margin: 0.15rem 0;
-}
-
-.menu-item-card__price {
-    font-size: 1rem;
-    font-weight: 800;
-    color: var(--brew-brown);
-}
-
-.menu-item-card__type {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-    margin-right: 4px;
-}
-
-.menu-item-card__type--veg {
-    background: #16a34a;
-}
-
-.menu-item-card__type--non_veg {
-    background: #dc2626;
-}
-
-.menu-item-card__type--egg {
-    background: #f59e0b;
-}
-
-/* === Cart === */
-.cart-sidebar {
-    position: sticky;
-    top: 1rem;
-    max-height: calc(100vh - 4rem);
-    overflow-y: auto;
-}
-
-.cart-summary {
-    background: var(--brew-glass);
-    border: 1px solid var(--brew-border);
-    border-radius: var(--brew-radius);
-    padding: 1.5rem;
-}
-
-.cart-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px dashed var(--brew-border);
-}
-
-.cart-item__qty {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.cart-item__qty button {
-    width: 24px;
-    height: 24px;
-    border: 1px solid var(--brew-border);
-    border-radius: 6px;
-    background: var(--brew-cream);
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--brew-transition);
-}
-
-.cart-item__qty button:hover {
-    background: var(--brew-warm);
-}
-
-/* === Table Selection Grid === */
-.table-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 1rem;
-}
-
-.table-card {
-    text-align: center;
-    cursor: pointer;
-    padding: 1.25rem 1rem;
-}
-
-.table-card--selected {
-    border: 2px solid var(--brew-brown);
-    background: rgba(111, 78, 55, 0.05);
-}
-
-.table-card--unavailable {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.table-card__number {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--brew-dark);
-}
-
-.table-card__type {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--brew-gold);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 0.25rem;
-}
-
-.table-card__capacity {
-    font-size: 0.78rem;
-    color: var(--brew-muted);
-    margin-top: 0.15rem;
-}
-
-/* === Setup Wizard === */
-.setup-wizard {
-    max-width: 650px;
-    margin: 0 auto;
-}
-
-.setup-wizard__steps {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 2rem;
-}
-
-.setup-wizard__step {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.setup-wizard__step-num {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 700;
-    border: 2px solid var(--brew-border);
-    color: var(--brew-muted);
-    transition: var(--brew-transition);
-}
-
-.setup-wizard__step--active .setup-wizard__step-num {
-    background: var(--brew-gradient);
-    color: #fff;
-    border-color: var(--brew-brown);
-}
-
-.setup-wizard__step--done .setup-wizard__step-num {
-    background: #16a34a;
-    color: #fff;
-    border-color: #16a34a;
-}
-
-.setup-wizard__step-line {
-    width: 40px;
-    height: 2px;
-    background: var(--brew-border);
-}
-
-.setup-wizard__step--done+.setup-wizard__step-line {
-    background: #16a34a;
-}
-
-/* === Loading Spinner === */
-.brew-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 3rem;
-}
-
-.brew-spinner::after {
-    content: '';
-    width: 36px;
-    height: 36px;
-    border: 3px solid var(--brew-border);
-    border-top-color: var(--brew-brown);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-
-/* === Owner Sidebar Layout === */
-.owner-layout {
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    min-height: calc(100vh - 100px);
-    background: var(--brew-cream);
-}
-
-.owner-sidebar {
-    background: var(--brew-glass);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-right: 1px solid var(--brew-border);
-    padding: 1.5rem 0;
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
-}
-
-.owner-sidebar__header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid var(--brew-border);
-    padding-bottom: 1.25rem;
-}
-
-.owner-sidebar__cafe-name {
-    font-size: 0.92rem;
-    font-weight: 800;
-    color: var(--brew-dark);
-    line-height: 1.2;
-}
-
-.owner-sidebar__nav {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 0 0.75rem;
-}
-
-.owner-sidebar__item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.7rem 1rem;
-    border: none;
-    background: transparent;
-    color: var(--brew-muted);
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 12px;
-    transition: var(--brew-transition);
-    font-family: inherit;
-    text-align: left;
-    width: 100%;
-    position: relative;
-}
-
-.owner-sidebar__item:hover {
-    background: rgba(139, 94, 60, 0.06);
-    color: var(--brew-dark);
-}
-
-.owner-sidebar__item--active {
-    background: var(--brew-gradient);
-    color: #fff;
-    font-weight: 700;
-    box-shadow: 0 4px 12px rgba(111, 78, 55, 0.2);
-}
-
-.owner-sidebar__item-icon {
-    font-size: 1.1rem;
-    width: 1.5rem;
-    text-align: center;
-}
-
-.owner-sidebar__badge {
-    position: absolute;
-    right: 0.75rem;
-    background: #dc2626;
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 800;
-    padding: 0.15rem 0.45rem;
-    border-radius: 10px;
-    min-width: 18px;
-    text-align: center;
-}
-
-.owner-sidebar__footer {
-    padding: 1rem 1.25rem;
-    border-top: 1px solid var(--brew-border);
-    margin-top: auto;
-}
-
-.owner-main {
-    padding: 2rem;
-    overflow-y: auto;
-    max-width: 1100px;
-}
-
-.owner-main__title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--brew-dark);
-    margin-bottom: 1.5rem;
-    letter-spacing: -0.3px;
-}
-
-/* === Revenue Stat Card Highlight === */
-.stat-card--revenue {
-    border-left: 3px solid var(--brew-gold);
-    background: rgba(166, 124, 82, 0.06);
-}
-
-.stat-card--revenue .stat-card__value {
-    color: var(--brew-brown);
-}
-
-/* === SENT_TO_KITCHEN Status Badge === */
-.status-badge--sent-to-kitchen,
-.status-badge--sent_to_kitchen {
-    background: #FDE68A;
-    color: #78350F;
-}
-
-/* === Animations === */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* === Responsive === */
-@media (max-width: 900px) {
-    .owner-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .owner-sidebar {
-        position: static;
-        height: auto;
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 0.75rem 1rem;
-        border-right: none;
-        border-bottom: 1px solid var(--brew-border);
-    }
-
-    .owner-sidebar__header {
-        display: none;
-    }
-
-    .owner-sidebar__nav {
-        flex-direction: row;
-        gap: 4px;
-        padding: 0;
-    }
-
-    .owner-sidebar__item {
-        white-space: nowrap;
-        padding: 0.5rem 0.8rem;
-        font-size: 0.8rem;
-    }
-
-    .owner-sidebar__footer {
-        display: none;
-    }
-
-    .owner-main {
-        padding: 1rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .dashboard-page {
-        padding: 1rem;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .cards-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .brew-field-row {
-        grid-template-columns: 1fr;
-    }
-
-    .table-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .table-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(111,78,55,0.4) !important;
+}
+
+/* Section Headers */
+.section-title-premium {
+  font-family: 'Georgia', serif;
+  font-weight: 900;
+  color: var(--brown);
+  position: relative;
+  display: inline-block;
+  margin-bottom: 25px;
+}
+
+.section-title-premium::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: var(--accent);
+}
+
+/* Category Headers */
+.category-header-premium {
+  background: var(--light-cream);
+  padding: 10px 20px;
+  border-radius: 10px;
+  border-left: 5px solid var(--brown);
+  font-family: 'Georgia', serif;
+  font-weight: 800;
+  color: var(--brown);
+  margin-bottom: 20px;
+}
+
+/* Tables Customization */
+.table-premium {
+  border: 2px solid var(--cream);
+  background: #fff;
+}
+
+.table-premium .status-available { color: var(--success); font-weight: 800; }
+.table-premium .status-occupied { color: var(--danger); font-weight: 800; }

@@ -104,7 +104,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main className="container">
+      <main className="containers">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />

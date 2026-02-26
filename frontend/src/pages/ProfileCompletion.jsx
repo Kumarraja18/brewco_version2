@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
-export default function ProfileCompletion(){
+export default function ProfileCompletion() {
   const [formData, setFormData] = useState({
     phone: '',
     street: '',
@@ -70,7 +70,7 @@ export default function ProfileCompletion(){
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    
+
     // All fields optional - just save what's filled
     setProfileComplete(true)
     setTimeout(() => {
@@ -93,11 +93,11 @@ export default function ProfileCompletion(){
         {/* Contact Information */}
         <section>
           <h3>Contact Information</h3>
-          
+
           <label className="field">
             Phone Number
-            <input 
-              type="tel" 
+            <input
+              type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
@@ -109,11 +109,11 @@ export default function ProfileCompletion(){
         {/* Address */}
         <section>
           <h3>Full Address</h3>
-          
+
           <label className="field">
             Street Address
-            <input 
-              type="text" 
+            <input
+              type="text"
               name="street"
               value={formData.street}
               onChange={handleChange}
@@ -124,8 +124,8 @@ export default function ProfileCompletion(){
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <label className="field">
               Plot Number
-              <input 
-                type="text" 
+              <input
+                type="text"
                 name="plotNo"
                 value={formData.plotNo}
                 onChange={handleChange}
@@ -135,8 +135,8 @@ export default function ProfileCompletion(){
 
             <label className="field">
               City
-              <input 
-                type="text" 
+              <input
+                type="text"
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
@@ -147,8 +147,8 @@ export default function ProfileCompletion(){
 
           <label className="field">
             Pincode
-            <input 
-              type="text" 
+            <input
+              type="text"
               name="pincode"
               value={formData.pincode}
               onChange={handleChange}
@@ -160,13 +160,13 @@ export default function ProfileCompletion(){
         {/* Academic Information */}
         <section>
           <h3>Academic Information</h3>
-          
+
           {formData.academicInfo.map((academic, index) => (
             <div key={index} className="form-group">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <label className="field">
                   School/College/University
-                  <input 
+                  <input
                     type="text"
                     value={academic.school}
                     onChange={(e) => handleAcademicChange(index, 'school', e.target.value)}
@@ -176,7 +176,7 @@ export default function ProfileCompletion(){
 
                 <label className="field">
                   Qualification
-                  <input 
+                  <input
                     type="text"
                     value={academic.qualification}
                     onChange={(e) => handleAcademicChange(index, 'qualification', e.target.value)}
@@ -187,7 +187,7 @@ export default function ProfileCompletion(){
 
               <label className="field">
                 Graduation Year
-                <input 
+                <input
                   type="number"
                   value={academic.year}
                   onChange={(e) => handleAcademicChange(index, 'year', e.target.value)}
@@ -198,8 +198,8 @@ export default function ProfileCompletion(){
               </label>
 
               {formData.academicInfo.length > 1 && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn-remove"
                   onClick={() => removeAcademic(index)}
                 >
@@ -209,8 +209,8 @@ export default function ProfileCompletion(){
             </div>
           ))}
 
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="btn small"
             onClick={addAcademic}
             style={{ marginTop: '1rem' }}
@@ -222,13 +222,13 @@ export default function ProfileCompletion(){
         {/* Work Experience */}
         <section>
           <h3>Work Experience (Optional)</h3>
-          
+
           {formData.workExperience.map((work, index) => (
             <div key={index} className="form-group">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <label className="field">
                   Company Name
-                  <input 
+                  <input
                     type="text"
                     value={work.company}
                     onChange={(e) => handleWorkChange(index, 'company', e.target.value)}
@@ -238,7 +238,7 @@ export default function ProfileCompletion(){
 
                 <label className="field">
                   Job Position
-                  <input 
+                  <input
                     type="text"
                     value={work.position}
                     onChange={(e) => handleWorkChange(index, 'position', e.target.value)}
@@ -249,7 +249,7 @@ export default function ProfileCompletion(){
 
               <label className="field">
                 Years of Experience
-                <input 
+                <input
                   type="number"
                   value={work.years}
                   onChange={(e) => handleWorkChange(index, 'years', e.target.value)}
@@ -260,8 +260,8 @@ export default function ProfileCompletion(){
               </label>
 
               {formData.workExperience.length > 1 && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn-remove"
                   onClick={() => removeWorkExperience(index)}
                 >
@@ -271,8 +271,8 @@ export default function ProfileCompletion(){
             </div>
           ))}
 
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="btn small"
             onClick={addWorkExperience}
             style={{ marginTop: '1rem' }}

@@ -3,11 +3,12 @@ package com.brewco.service;
 import com.brewco.dto.LoginRequest;
 import com.brewco.dto.RegisterRequest;
 import com.brewco.dto.UserDto;
-import com.brewco.entity.User;
-import com.brewco.repository.UserRepository;
+import com.brewco.entity.*;
+import com.brewco.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -23,6 +24,16 @@ public class UserService {
     @Autowired
     private EmailVerificationService emailVerificationService;
 
+    @Autowired
+    private AddressRepository addressRepository;
+
+    @Autowired
+    private WorkExperienceRepository workExperienceRepository;
+
+    @Autowired
+    private GovernmentProofRepository governmentProofRepository;
+
+    @Transactional
     public User registerUser(RegisterRequest request) throws Exception {
         // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -34,13 +45,13 @@ public class UserService {
                 ? request.getRole().toUpperCase()
                 : "CUSTOMER";
 
-        // Create new user (PASSWORD REMAINS NULL, GENERATED ON ADMIN APPROVAL)
+        // Create new user
         User user = new User();
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setDateOfBirth(request.getDateOfBirth());
-        user.setGender(request.getGender());
+        user.setGender(request.getGender() != null ? request.getGender().toUpperCase() : "OTHER");
         if (request.getPhoneNumber() != null) {
             user.setPhoneNumber(request.getPhoneNumber());
         }
@@ -50,9 +61,51 @@ public class UserService {
         user.setIsActive(false);
         user.setIsEmailVerified(false);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Save Address if provided
+        if (request.getStreet() != null && !request.getStreet().isBlank()) {
+            Address addr = new Address();
+            addr.setUser(savedUser);
+            addr.setStreet(request.getStreet());
+            addr.setCity(request.getCity() != null ? request.getCity() : "N/A");
+            addr.setState(request.getState());
+            addr.setPostalCode(request.getPincode() != null ? request.getPincode() : "000000");
+            addressRepository.save(addr);
+        }
+
+        // Save Work Experience if provided
+        if (request.getCompanyName() != null && !request.getCompanyName().isBlank()) {
+            WorkExperience exp = new WorkExperience();
+            exp.setUser(savedUser);
+            exp.setCompanyName(request.getCompanyName());
+            exp.setPosition(request.getDesignation() != null ? request.getDesignation() : "N/A");
+            
+            // Safe parsing for years
+            int years = 0;
+            try {
+                if (request.getCtc() != null && !request.getCtc().isBlank()) {
+                    years = Integer.parseInt(request.getCtc().replaceAll("[^0-9]", ""));
+                }
+            } catch (Exception e) { years = 1; }
+            
+            exp.setYears(Math.max(0, years)); 
+            workExperienceRepository.save(exp);
+        }
+
+        // Save Govt Proof if provided
+        if (request.getIdType() != null && !request.getIdType().isBlank()) {
+            GovernmentProof proof = new GovernmentProof();
+            proof.setUser(savedUser);
+            proof.setProofType(request.getIdType());
+            proof.setProofNumber(request.getIdNumber() != null ? request.getIdNumber() : "N/A");
+            governmentProofRepository.save(proof);
+        }
+
+        return savedUser;
     }
 
+    @Transactional
     public void verifyEmail(String email, String otp) throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new Exception("User not found"));
@@ -70,6 +123,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void resendOtp(String email) throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new Exception("User not found"));
@@ -81,6 +135,7 @@ public class UserService {
         emailVerificationService.generateAndSendOtp(user);
     }
 
+    @Transactional
     public void processForgotPassword(String email) throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new Exception("No account found with this email"));
@@ -88,6 +143,7 @@ public class UserService {
         emailVerificationService.generateAndSendOtp(user);
     }
 
+    @Transactional
     public void resetPassword(String email, String otp, String newPassword) throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new Exception("User not found"));
@@ -101,6 +157,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public User loginUser(LoginRequest request) throws Exception {
         Optional<User> user = userRepository.findByEmail(request.getEmail());
 
@@ -128,8 +185,14 @@ public class UserService {
             }
         }
 
-        // Role is determined by the backend, not the frontend dropdown.
-        // The frontend role picker is cosmetic only — no cross-verification needed.
+        // Verify role if provided in request
+        if (request.getRole() != null && !request.getRole().isBlank()) {
+            String requestedRole = request.getRole().toUpperCase();
+            String actualRole = existingUser.getRole().toUpperCase();
+            if (!requestedRole.equals(actualRole)) {
+                throw new Exception("You are registered as " + actualRole + ". Please select the correct role.");
+            }
+        }
 
         // Record login details
         existingUser.setLastLoginAt(LocalDateTime.now());
@@ -144,6 +207,7 @@ public class UserService {
         return userRepository.save(existingUser);
     }
 
+    @Transactional
     public User loginUserWithIp(LoginRequest request, String ipAddress) throws Exception {
         User existingUser = loginUser(request);
         existingUser.setLastLoginIp(ipAddress);
@@ -158,6 +222,7 @@ public class UserService {
         return user.get();
     }
 
+    @Transactional
     public User updateUserProfile(Long id, User updatedUser) throws Exception {
         User user = getUserById(id);
 

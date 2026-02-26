@@ -8,6 +8,7 @@ import com.brewco.repository.MenuItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,14 +31,17 @@ public class MenuService {
         return menuCategoryRepository.findByCafeOrderByDisplayOrder(cafe);
     }
 
+    @Transactional
     public MenuCategory createCategory(MenuCategory category) {
         return menuCategoryRepository.save(category);
     }
 
+    @Transactional
     public MenuCategory updateCategory(MenuCategory category) {
         return menuCategoryRepository.save(category);
     }
 
+    @Transactional
     public void deleteCategory(Long id) {
         menuCategoryRepository.deleteById(id);
     }
@@ -56,14 +60,17 @@ public class MenuService {
         return menuItemRepository.findByCafe(cafe);
     }
 
+    @Transactional
     public MenuItem createItem(MenuItem item) {
         return menuItemRepository.save(item);
     }
 
+    @Transactional
     public MenuItem updateItem(MenuItem item) {
         return menuItemRepository.save(item);
     }
 
+    @Transactional
     public void deleteItem(Long id) {
         menuItemRepository.deleteById(id);
     }

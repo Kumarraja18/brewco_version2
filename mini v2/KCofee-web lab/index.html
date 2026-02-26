@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brew &amp; Co — Coffee Ordering &amp; Management</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     HOME PAGE
+     ============================================================ -->
+<div id="home-page" class="page active">
+  <!-- HEADER -->
+  <header class="header" id="main-header">
+    <div class="brand" onclick="navigate('home')">☕ BREW &amp; CO</div>
+    <nav class="nav">
+      <a href="#home">Home</a>
+      <a href="#features">Service</a>
+      <a href="#how-it-works">How it Works</a>
+      <a href="#footer">Contact us</a>
+      <!-- Auth buttons — toggled by JS -->
+      <div class="nav-buttons" id="header-auth-buttons">
+        <a href="#" class="btn-nav" onclick="navigate('login'); return false;">Login</a>
+        <a href="#" class="btn-nav btn-primary" onclick="navigate('register'); return false;">Register</a>
+      </div>
+      <div class="nav-buttons hidden" id="header-user-area">
+        <span class="user-info">
+          <span id="header-user-name"></span>
+          <span class="role-badge" id="header-user-role"></span>
+        </span>
+        <a href="#" class="btn-nav btn-danger" onclick="logout(); return false;">Logout</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero card" id="home">
+      <div class="hero-content">
+        <h1>Welcome to Brew &amp; Co</h1>
+        <p>Discover the finest coffee experience — book tables, pre-order your favorites, and pay securely</p>
+        <div class="actions">
+          <a href="#" class="btn primary" onclick="navigate('register'); return false;">Get Started</a>
+          <a href="#" class="btn" onclick="navigate('login'); return false;">Sign In</a>
+        </div>
+      </div>
+      <div class="hero-image-wrapper">
+        <img src="https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?w=600&h=400&fit=crop" alt="Premium Coffee" class="hero-image" />
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+      <div class="card feature-card">
+        <img src="https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?w=300&h=200&fit=crop" alt="Artisan Coffee" class="feature-image" />
+        <h3>☕ Artisan Coffee</h3>
+        <p>Handpicked beans roasted to perfection for your unique taste.</p>
+      </div>
+      <div class="card feature-card">
+        <img src="https://images.pexels.com/photos/1414651/pexels-photo-1414651.jpeg?w=300&h=200&fit=crop" alt="Easy Reservations" class="feature-image" />
+        <h3>📅 Easy Reservations</h3>
+        <p>Book your table for any date and time at your favorite Brew &amp; Co location.</p>
+      </div>
+      <div class="card feature-card">
+        <img src="https://images.pexels.com/photos/291528/pexels-photo-291528.jpeg?w=300&h=200&fit=crop" alt="Pre-Order Treats" class="feature-image" />
+        <h3>🥐 Pre-Order Treats</h3>
+        <p>Order pastries and snacks ahead so they're fresh when you arrive.</p>
+      </div>
+      <div class="card feature-card">
+        <img src="https://images.pexels.com/photos/3962286/pexels-photo-3962286.jpeg?w=300&h=200&fit=crop" alt="Secure Payments" class="feature-image" />
+        <h3>💳 Secure Payments</h3>
+        <p>Safe, seamless transactions with complete transparency.</p>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="info" id="how-it-works">
+      <div class="info-content">
+        <h2>How Brew &amp; Co Works</h2>
+        <div class="steps-wrapper">
+          <ol class="steps">
+            <li><div><strong>Create Account</strong><br><span>Register and complete your profile</span></div></li>
+            <li><div><strong>Browse Locations</strong><br><span>Explore our Brew &amp; Co locations</span></div></li>
+            <li><div><strong>Reserve Seat</strong><br><span>Pick your favorite spot and time</span></div></li>
+          </ol>
+          <ol class="steps">
+            <li><div><strong>Order Ahead</strong><br><span>Choose from our signature menu</span></div></li>
+            <li><div><strong>Relax &amp; Enjoy</strong><br><span>Track your order and savor the moment</span></div></li>
+            <li><div><strong>Pay Online</strong><br><span>Quick and secure payment</span></div></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" id="footer">
+    <div class="footer-content">
+      <div class="footer-left">
+        <span class="brand">© Brew &amp; Co</span>
+        <p>Coffee Ordering &amp; Management Platform</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://www.linkedin.com" target="_blank" rel="noopener">🔗 LinkedIn</a>
+        <a href="https://www.youtube.com" target="_blank" rel="noopener">📺 YouTube</a>
+        <a href="mailto:support@brewco.com">📧 support@brewco.com</a>
+        <a href="tel:+911234567890">📞 +91 9392708749</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     LOGIN PAGE
+     ============================================================ -->
+<div id="login-page" class="page">
+  <div class="auth-page">
+    <div class="auth-hero">
+      <div class="auth-hero-content">
+        <img src="https://images.pexels.com/photos/1695052/pexels-photo-1695052.jpeg?w=400&h=300&fit=crop" alt="Coffee Shop" class="auth-hero-img" />
+        <h2>Welcome to Brew &amp; Co</h2>
+        <p>Order your favorite coffee and enjoy a seamless table booking experience.</p>
+      </div>
+    </div>
+    <div class="auth-form-side">
+      <div class="auth-form">
+        <h2>Sign In</h2>
+        <div id="login-error" class="error-msg hidden"></div>
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-field">
+            <label>Email</label>
+            <input type="email" id="login-email" required placeholder="you@example.com" />
+          </div>
+          <div class="form-field">
+            <label>Password</label>
+            <input type="password" id="login-password" required placeholder="••••••••" />
+          </div>
+          <button type="submit" class="btn primary block" id="login-btn">Sign In</button>
+          <button type="button" class="btn block" style="margin-top:.6rem" onclick="guestLogin()">Continue as Guest</button>
+        </form>
+        <p class="switch-text">Don't have an account? <a href="#" onclick="navigate('register'); return false;">Sign up</a></p>
+        <p class="switch-text"><a href="#" onclick="navigate('home'); return false;">← Back to Home</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     REGISTER PAGE (Simple form)
+     ============================================================ -->
+<div id="register-page" class="page">
+  <div class="auth-page">
+    <div class="auth-hero">
+      <div class="auth-hero-content">
+        <img src="https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?w=400&h=300&fit=crop" alt="Coffee" class="auth-hero-img" />
+        <h2>Join Brew &amp; Co</h2>
+        <p>Create your account today and start enjoying the best coffee experience.</p>
+      </div>
+    </div>
+    <div class="auth-form-side">
+      <div class="auth-form">
+        <h2>Create Account</h2>
+        <div id="register-error" class="error-msg hidden"></div>
+        <form id="register-form" onsubmit="handleRegister(event)">
+          <div class="form-row">
+            <div class="form-field"><label>First Name</label><input type="text" id="reg-firstName" required placeholder="John" /></div>
+            <div class="form-field"><label>Last Name</label><input type="text" id="reg-lastName" required placeholder="Doe" /></div>
+          </div>
+          <div class="form-field"><label>Email</label><input type="email" id="reg-email" required placeholder="you@example.com" /></div>
+          <div class="form-field"><label>Phone</label><input type="tel" id="reg-phone" required placeholder="9876543210" /></div>
+          <div class="form-field"><label>Password</label><input type="password" id="reg-password" required placeholder="8-16 chars, A-Z, a-z, special char" /></div>
+          <div class="form-field"><label>Confirm Password</label><input type="password" id="reg-confirmPassword" required placeholder="Re-enter password" /></div>
+          <button type="submit" class="btn primary block" id="reg-submit-btn">Create Account</button>
+        </form>
+        <p class="switch-text">Already have an account? <a href="#" onclick="navigate('login'); return false;">Sign in</a></p>
+        <p class="switch-text"><a href="#" onclick="navigate('home'); return false;">← Back to Home</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     CUSTOMER DASHBOARD
+     ============================================================ -->
+<div id="customer-dashboard-page" class="page">
+  <header class="header">
+    <div class="brand" onclick="navigate('home')" style="cursor:pointer">☕ BREW &amp; CO</div>
+    <nav class="nav">
+      <a href="#" onclick="navigate('home'); return false;">Home</a>
+      <a href="#" onclick="navigate('cafes'); return false;">Cafés</a>
+      <a href="#" onclick="navigate('my-orders'); return false;">My Orders</a>
+      <div class="nav-buttons">
+        <span class="user-info">
+          <span id="cust-dash-name"></span>
+          <span class="role-badge">Customer</span>
+        </span>
+        <a href="#" class="btn-nav btn-danger" onclick="logout(); return false;">Logout</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container">
+    <div class="dash-header">
+      <h1 id="cust-welcome">Welcome back ☕</h1>
+      <p>Discover, order, and enjoy premium coffee experiences</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-value" id="stat-active">0</div><div class="stat-label">Active Orders</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="stat-completed">0</div><div class="stat-label">Completed</div></div>
+      <div class="stat-card"><div class="stat-icon">☕</div><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total Orders</div></div>
+    </div>
+    <div class="quick-actions">
+      <div class="action-card" onclick="navigate('cafes')"><div class="action-icon">🏪</div><h3>Browse Cafés</h3><p>Find your perfect coffee spot</p></div>
+      <div class="action-card" onclick="navigate('my-orders')"><div class="action-icon">📋</div><h3>Order History</h3><p>View past and current orders</p></div>
+      <div class="action-card" onclick="navigate('my-bookings')"><div class="action-icon">📅</div><h3>My Bookings</h3><p>Check your reservations</p></div>
+      <div class="action-card" onclick="alert('Profile page coming soon!')"><div class="action-icon">👤</div><h3>My Profile</h3><p>Manage your account</p></div>
+    </div>
+    <h3 class="section-title">Active Orders</h3>
+    <div class="orders-grid" id="cust-active-orders">
+      <div class="empty-state"><div class="empty-icon">☕</div><h3>No active orders</h3><p>Browse cafés and place your first order!</p><button class="btn primary" onclick="navigate('cafes')">Browse Cafés</button></div>
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     BROWSE CAFES
+     ============================================================ -->
+<div id="cafes-page" class="page">
+  <header class="header">
+    <div class="brand" onclick="navigate('home')" style="cursor:pointer">☕ BREW &amp; CO</div>
+    <nav class="nav">
+      <a href="#" onclick="navigate('home'); return false;">Home</a>
+      <a href="#" onclick="navigate('cafes'); return false;">Cafés</a>
+      <div class="nav-buttons" id="cafes-auth-area"></div>
+    </nav>
+  </header>
+  <main class="container">
+    <h2 class="section-title" style="font-size:1.8rem">Browse Cafés</h2>
+    <div class="search-bar">
+      <input type="text" id="cafe-search" placeholder="Search by name or city..." oninput="filterCafes()" />
+    </div>
+    <div class="cafes-grid" id="cafes-list"></div>
+  </main>
+</div>
+
+<!-- ============================================================
+     CAFE DETAIL & ORDERING
+     ============================================================ -->
+<div id="cafe-detail-page" class="page">
+  <header class="header">
+    <div class="brand" onclick="navigate('home')" style="cursor:pointer">☕ BREW &amp; CO</div>
+    <nav class="nav">
+      <a href="#" onclick="navigate('cafes'); return false;">← Back to Cafés</a>
+      <div class="nav-buttons" id="cafe-detail-auth"></div>
+    </nav>
+  </header>
+  <main class="container">
+    <div class="card cafe-header-card" id="cafe-detail-header"></div>
+
+    <!-- Step 1: Order Type -->
+    <div id="order-step-type" class="hidden">
+      <h3 class="section-title">Choose Order Type</h3>
+      <div class="order-type-cards">
+        <div class="order-type-card" onclick="selectOrderType('dine-in', this)">
+          <div class="ot-icon">🍽️</div><h3>Dine In</h3><p>Select a table and eat here</p>
+        </div>
+        <div class="order-type-card" onclick="selectOrderType('takeaway', this)">
+          <div class="ot-icon">🥡</div><h3>Takeaway</h3><p>Pack it and take it with you</p>
+        </div>
+      </div>
+      <div style="margin-top:1rem"><button class="btn primary" onclick="confirmOrderType()">Continue</button></div>
+    </div>
+
+    <!-- Step 2: Table Selection (dine-in only) -->
+    <div id="order-step-table" class="hidden">
+      <h3 class="section-title">Select a Table</h3>
+      <div class="tables-grid" id="order-tables-grid"></div>
+      <div style="margin-top:1rem">
+        <button class="btn" onclick="orderBack('type')">← Back</button>
+        <button class="btn primary" onclick="confirmTable()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Date/Time/Guests (dine-in only) -->
+    <div id="order-step-datetime" class="hidden">
+      <h3 class="section-title">Pick Date, Time &amp; Guests</h3>
+      <div class="form-row">
+        <div class="form-field"><label>Date</label><input type="date" id="order-date" /></div>
+        <div class="form-field">
+          <label>Guests</label>
+          <select id="order-guests"></select>
+        </div>
+      </div>
+      <label style="font-weight:700;display:block;margin-bottom:.5rem">Time Slot</label>
+      <div class="time-slots" id="order-time-slots"></div>
+      <div style="margin-top:1.5rem">
+        <button class="btn" onclick="orderBack('table')">← Back</button>
+        <button class="btn primary" onclick="confirmDateTime()">Confirm Reservation &amp; Continue to Menu</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Menu & Cart -->
+    <div id="order-step-menu" class="hidden">
+      <h3 class="section-title">Menu</h3>
+      <div class="menu-cart-layout">
+        <div>
+          <div class="category-tabs" id="menu-category-tabs"></div>
+          <div class="menu-items" id="menu-items-grid"></div>
+        </div>
+        <div class="cart-sidebar" id="cart-sidebar">
+          <h3>🛒 Your Order (<span id="cart-count">0</span>)</h3>
+          <div id="cart-reservation-info" class="cart-reservation-info hidden"></div>
+          <div id="cart-items"></div>
+          <textarea class="special-instructions" id="special-instructions" placeholder="Special instructions (optional)..."></textarea>
+          <div class="cart-total"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
+          <button class="btn primary block" style="margin-top:1rem" onclick="placeOrder()">Place Order</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     ORDER TRACKING
+     ============================================================ -->
+<div id="order-tracking-page" class="page">
+  <header class="header">
+    <div class="brand" onclick="navigate('home')" style="cursor:pointer">☕ BREW &amp; CO</div>
+    <nav class="nav">
+      <a href="#" onclick="navigate('my-orders'); return false;">← My Orders</a>
+      <a href="#" onclick="navigate('customer-dashboard'); return false;">Dashboard</a>
+      <div class="nav-buttons"><a href="#" class="btn-nav btn-danger" onclick="logout(); return false;">Logout</a></div>
+    </nav>
+  </header>
+  <main class="container">
+    <h2 class="section-title" style="font-size:1.6rem" id="tracking-title">Order Tracking</h2>
+    <div class="tracking-timeline" id="tracking-timeline"></div>
+    <div class="tracking-status-msg" id="tracking-status-msg"></div>
+    <div class="card order-detail-card" id="tracking-details"></div>
+  </main>
+</div>
+
+<!-- ============================================================
+     ORDER HISTORY (MY ORDERS)
+     ============================================================ -->
+<div id="my-orders-page" class="page">
+  <header class="header">
+    <div class="brand" onclick="navigate('home')" style="cursor:pointer">☕ BREW &amp; CO</div>
+    <nav class="nav">
+      <a href="#" onclick="navigate('customer-dashboard'); return false;">Dashboard</a>
+      <a href="#" onclick="navigate('cafes'); return false;">Cafés</a>
+      <div class="nav-buttons"><a href="#" class="btn-nav btn-danger" onclick="logout(); return false;">Logout</a></div>
+    </nav>
+  </header>
+  <main class="container">
+    <h2 class="section-title" style="font-size:1.6rem">My Orders</h2>
+    <div class="filter-tabs" id="order-filter-tabs"></div>
+    <div class="orders-grid" id="my-orders-list"></div>
+  </main>
+</div>
+
+<!-- ============================================================
+     MY BOOKINGS
+     ============================================================ -->
+<div id="my-bookings-page" class="page">
+  <header class="header">
+    <div class="brand" onclick="navigate('home')" style="cursor:pointer">☕ BREW &amp; CO</div>
+    <nav class="nav">
+      <a href="#" onclick="navigate('customer-dashboard'); return false;">Dashboard</a>
+      <div class="nav-buttons"><a href="#" class="btn-nav btn-danger" onclick="logout(); return false;">Logout</a></div>
+    </nav>
+  </header>
+  <main class="container">
+    <h2 class="section-title" style="font-size:1.6rem">My Bookings</h2>
+    <div class="orders-grid" id="my-bookings-list"></div>
+  </main>
+</div>
+
+<!-- ============================================================
+     CAFE SETUP (Cafe Owner — Multi-step)
+     ============================================================ -->
+<div id="cafe-setup-page" class="page">
+  <header class="header">
+    <div class="brand" onclick="navigate('home')" style="cursor:pointer">☕ BREW &amp; CO</div>
+    <nav class="nav">
+      <a href="#" onclick="navigate('cafe-owner-dashboard'); return false;">Dashboard</a>
+      <div class="nav-buttons"><a href="#" class="btn-nav btn-danger" onclick="logout(); return false;">Logout</a></div>
+    </nav>
+  </header>
+  <main class="container">
+    <div class="setup-wizard">
+      <h2 class="section-title" style="font-size:1.6rem">Set Up Your Café</h2>
+      <div class="setup-steps-indicator" id="setup-steps-indicator"></div>
+      <div id="setup-error" class="error-msg hidden"></div>
+
+      <!-- Setup Step 0: Basic Info -->
+      <div class="step-section active" data-setup-step="0">
+        <div class="form-field"><label>Café Name</label><input type="text" id="setup-cafeName" /></div>
+        <div class="form-row">
+          <div class="form-field"><label>Owner Name</label><input type="text" id="setup-ownerName" /></div>
+          <div class="form-field"><label>Contact Number</label><input type="tel" id="setup-contact" /></div>
+        </div>
+        <div class="form-field"><label>Email</label><input type="email" id="setup-email" /></div>
+        <div class="form-row">
+          <div class="form-field"><label>Opening Time</label><input type="time" id="setup-openTime" value="08:00" /></div>
+          <div class="form-field"><label>Closing Time</label><input type="time" id="setup-closeTime" value="22:00" /></div>
+        </div>
+        <div class="step-nav"><button class="btn primary" onclick="setupNext()">Next →</button></div>
+      </div>
+
+      <!-- Setup Step 1: Address -->
+      <div class="step-section" data-setup-step="1">
+        <div class="form-field"><label>Street Address</label><input type="text" id="setup-street" /></div>
+        <div class="form-row">
+          <div class="form-field"><label>City</label><input type="text" id="setup-city" /></div>
+          <div class="form-field"><label>State</label><input type="text" id="setup-state" /></div>
+        </div>
+        <div class="form-field"><label>Pincode</label><input type="text" id="setup-pincode" /></div>
+        <div class="step-nav">
+          <button class="btn" onclick="setupPrev()">← Back</button>
+          <button class="btn primary" onclick="setupNext()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Setup Step 2: Business -->
+      <div class="step-section" data-setup-step="2">
+        <div class="form-field"><label>Business Type</label><input type="text" id="setup-bizType" placeholder="Cafe / Restaurant / Bakery" /></div>
+        <div class="form-field"><label>FSSAI Number</label><input type="text" id="setup-fssai" /></div>
+        <div class="form-field"><label>GST Number</label><input type="text" id="setup-gst" /></div>
+        <div class="step-nav">
+          <button class="btn" onclick="setupPrev()">← Back</button>
+          <button class="btn primary" onclick="setupNext()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Setup Step 3: Bank -->
+      <div class="step-section" data-setup-step="3">
+        <div class="form-field"><label>Account Holder Name</label><input type="text" id="setup-accName" /></div>
+        <div class="form-field"><label>Account Number</label><input type="text" id="setup-accNum" /></div>
+        <div class="form-field"><label>IFSC Code</label><input type="text" id="setup-ifsc" /></div>
+        <div class="form-field"><label>UPI ID</label><input type="text" id="setup-upi" /></div>
+        <div class="step-nav">
+          <button class="btn" onclick="setupPrev()">← Back</button>
+          <button class="btn primary" onclick="setupNext()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Setup Step 4: Services -->
+      <div class="step-section" data-setup-step="4">
+        <div class="form-row">
+          <div class="form-field"><label>Total Tables</label><input type="number" id="setup-totalTables" value="10" /></div>
+          <div class="form-field"><label>Seating Capacity</label><input type="number" id="setup-capacity" value="40" /></div>
+        </div>
+        <label style="font-weight:700;display:block;margin:.8rem 0 .4rem">Amenities</label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" id="setup-parking" /> Parking</label>
+          <label><input type="checkbox" id="setup-wifi" checked /> WiFi</label>
+          <label><input type="checkbox" id="setup-ac" checked /> AC</label>
+          <label><input type="checkbox" id="setup-delivery" /> Home Delivery</label>
+          <label><input type="checkbox" id="setup-takeaway" checked /> Takeaway</label>
+          <label><input type="checkbox" id="setup-dinein" checked /> Dine-In</label>
+        </div>
+        <div class="step-nav">
+          <button class="btn" onclick="setupPrev()">← Back</button>
+          <button class="btn primary" onclick="setupNext()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Setup Step 5: Review -->
+      <div class="step-section" data-setup-step="5">
+        <div class="card" id="setup-review-summary" style="margin-bottom:1.5rem"></div>
+        <div class="step-nav">
+          <button class="btn" onclick="setupPrev()">← Back</button>
+          <button class="btn primary" onclick="setupNext()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Setup Step 6: Photos -->
+      <div class="step-section" data-setup-step="6">
+        <div class="form-field">
+          <label>Cafe Logo</label>
+          <div class="file-upload-area" onclick="document.getElementById('setup-logo').click()">
+            <input type="file" id="setup-logo" accept="image/*" /><p>📁 Upload Logo</p>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Exterior Photo</label>
+          <div class="file-upload-area" onclick="document.getElementById('setup-exterior').click()">
+            <input type="file" id="setup-exterior" accept="image/*" /><p>📁 Upload Exterior</p>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Interior Photo</label>
+          <div class="file-upload-area" onclick="document.getElementById('setup-interior').click()">
+            <input type="file" id="setup-interior" accept="image/*" /><p>📁 Upload Interior</p>
+          </div>
+        </div>
+        <div class="step-nav">
+          <button class="btn" onclick="setupPrev()">← Back</button>
+          <button class="btn primary" onclick="submitCafeSetup()">Submit Application</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     CAFE OWNER DASHBOARD
+     ============================================================ -->
+<div id="cafe-owner-dashboard-page" class="page">
+  <div class="owner-layout">
+    <!-- Sidebar -->
+    <aside class="owner-sidebar">
+      <div class="sidebar-brand">
+        <h3 id="owner-cafe-name">☕ My Café</h3>
+        <span class="verify-badge" id="owner-verify-badge">✓ Verified</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="active" onclick="ownerTab('overview', this); return false;">☕ My Café</a>
+        <a href="#" onclick="ownerTab('orders', this); return false;">🛒 Orders <span class="nav-badge" id="owner-pending-count">0</span></a>
+        <a href="#" onclick="ownerTab('menu', this); return false;">📋 Menu</a>
+        <a href="#" onclick="ownerTab('tables', this); return false;">🪑 Tables</a>
+        <a href="#" onclick="ownerTab('bookings', this); return false;">📅 Bookings</a>
+      </nav>
+      <div class="sidebar-user" id="owner-sidebar-user"></div>
+    </aside>
+    <!-- Main -->
+    <main class="owner-main">
+      <!-- Overview -->
+      <div id="owner-tab-overview">
+        <h2 class="section-title" style="font-size:1.6rem">Café Overview</h2>
+        <div class="owner-stats" id="owner-stats"></div>
+      </div>
+      <!-- Orders -->
+      <div id="owner-tab-orders" class="hidden">
+        <h2 class="section-title" style="font-size:1.6rem">Orders</h2>
+        <div class="orders-grid" id="owner-orders-list"></div>
+      </div>
+      <!-- Menu -->
+      <div id="owner-tab-menu" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+          <h2 class="section-title" style="margin-bottom:0;font-size:1.6rem">Menu Items</h2>
+          <button class="btn primary small" onclick="openMenuModal()">+ Add Menu Item</button>
+        </div>
+        <div id="owner-menu-list"></div>
+      </div>
+      <!-- Tables -->
+      <div id="owner-tab-tables" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+          <h2 class="section-title" style="margin-bottom:0;font-size:1.6rem">Tables</h2>
+          <button class="btn primary small" onclick="openTableModal()">+ Add Table</button>
+        </div>
+        <div id="owner-tables-list"></div>
+      </div>
+      <!-- Bookings -->
+      <div id="owner-tab-bookings" class="hidden">
+        <h2 class="section-title" style="font-size:1.6rem">Bookings</h2>
+        <div id="owner-bookings-list"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODALS
+     ============================================================ -->
+<!-- Add Menu Item Modal -->
+<div id="modal-menu" class="modal-overlay hidden">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-menu')">&times;</button>
+    <h3>Add Menu Item</h3>
+    <div class="form-field"><label>Item Name</label><input type="text" id="modal-itemName" /></div>
+    <div class="form-field"><label>Description</label><input type="text" id="modal-itemDesc" /></div>
+    <div class="form-row">
+      <div class="form-field"><label>Price (₹)</label><input type="number" id="modal-itemPrice" /></div>
+      <div class="form-field">
+        <label>Type</label>
+        <select id="modal-itemType"><option value="VEG">VEG</option><option value="NON-VEG">NON-VEG</option></select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Category</label>
+      <select id="modal-itemCat">
+        <option>Beverages</option><option>Snacks</option><option>Desserts</option><option>Main Course</option><option>Add-ons</option>
+      </select>
+    </div>
+    <div class="checkbox-group" style="margin:.8rem 0">
+      <label><input type="checkbox" id="modal-itemAvail" checked /> Available</label>
+      <label><input type="checkbox" id="modal-itemAddon" /> Is Add-on</label>
+    </div>
+    <button class="btn primary block" onclick="addMenuItem()">Add Item</button>
+  </div>
+</div>
+
+<!-- Add Table Modal -->
+<div id="modal-table" class="modal-overlay hidden">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-table')">&times;</button>
+    <h3>Add Table</h3>
+    <div class="form-field"><label>Table Number</label><input type="text" id="modal-tableNum" placeholder="T1" /></div>
+    <div class="form-row">
+      <div class="form-field"><label>Capacity</label><input type="number" id="modal-tableCap" value="4" /></div>
+      <div class="form-field">
+        <label>Type</label>
+        <select id="modal-tableType"><option>Standard</option><option>Premium</option></select>
+      </div>
+    </div>
+    <button class="btn primary block" onclick="addTable()">Add Table</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

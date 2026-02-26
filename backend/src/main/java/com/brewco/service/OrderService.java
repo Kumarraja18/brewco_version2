@@ -67,7 +67,6 @@ public class OrderService {
     public List<Order> getCafeOrdersByStatus(Cafe cafe, String status) {
         return orderRepository.findByCafeAndStatus(cafe, status);
     }
-
     public Optional<Order> getOrderById(Long id) {
         return orderRepository.findById(id);
     }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,7 @@ public class StaffService {
         return staffAssignmentRepository.findByCafeAndIsActiveTrue(cafe);
     }
 
+    @Transactional
     public StaffAssignment assignStaffToCafe(User staffUser, Cafe cafe, String role, User assignedBy) {
         StaffAssignment assignment = new StaffAssignment();
         assignment.setStaff(staffUser);
@@ -57,6 +59,7 @@ public class StaffService {
      * Creates a new staff user (chef or waiter) and assigns them to the cafe.
      * Auto-generates a secure password and emails it to the staff member.
      */
+    @Transactional
     public StaffAssignment createAndAssignStaff(String firstName, String lastName, String email,
             String tempPassword, String role, Cafe cafe, User assignedBy) throws Exception {
         // Check if email already exists

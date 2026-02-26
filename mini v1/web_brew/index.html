@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Brew & Co — Artisan Coffee Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: HOME
+═══════════════════════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <!-- NAV -->
+  <nav class="nav glass-nav">
+    <div class="nav-brand">☕ <span>Brew <em>&</em> Co</span></div>
+    <div class="nav-links">
+      <a href="#services-section" class="nav-a">Services</a>
+      <a href="#how-section" class="nav-a">How It Works</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-outline" onclick="showPage('page-login')">Sign In</button>
+      <button class="btn-fill" onclick="showPage('page-register')">Join Free</button>
+    </div>
+    <button class="ham" id="ham">☰</button>
+  </nav>
+  <div class="mob-menu glass-panel" id="mob-menu">
+    <a href="#" onclick="closeMob()">Services</a>
+    <a href="#" onclick="closeMob()">How It Works</a>
+    <button class="btn-outline" onclick="closeMob();showPage('page-login')">Sign In</button>
+    <button class="btn-fill" onclick="closeMob();showPage('page-register')">Join Free</button>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-blobs">
+      <div class="b b1"></div><div class="b b2"></div><div class="b b3"></div>
+    </div>
+    <div class="hero-text">
+      <span class="eyebrow">✦ Artisan Coffee Experience ✦</span>
+      <h1>Where Every Sip<br/><em>Tells a Story</em></h1>
+      <p>Discover handcrafted brews, reserve your perfect table, and skip the wait — all in one place.</p>
+      <div class="hero-btns">
+        <button class="btn-fill big" onclick="showPage('page-register')">Get Started</button>
+        <button class="btn-ghost big" onclick="showPage('page-login')">Sign In</button>
+      </div>
+    </div>
+    <div class="hero-card glass-card">
+      <div class="cup-wrap">
+        <div class="steam st1"></div><div class="steam st2"></div><div class="steam st3"></div>
+        <div class="cup-body"><div class="liquid"></div><div class="foam"></div></div>
+        <div class="cup-handle"></div>
+        <div class="saucer"></div>
+      </div>
+      <div class="mini-stat-row">
+        <div class="mini-stat"><span>48+</span><small>Brews</small></div>
+        <div class="mini-stat"><span>12</span><small>Cafes</small></div>
+        <div class="mini-stat"><span>4.9★</span><small>Rating</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section" id="services-section">
+    <div class="sec-head">
+      <p class="eyebrow">✦ What We Offer ✦</p>
+      <h2>Everything You Need<br/><em>In One Platform</em></h2>
+    </div>
+    <div class="services-grid">
+      <div class="srv-card glass-card">
+        <div class="srv-icon">🔍</div>
+        <h3>Discover Cafes</h3>
+        <p>Browse curated cafes near you, filter by vibe, and explore menus before you even step in.</p>
+      </div>
+      <div class="srv-card glass-card">
+        <div class="srv-icon">📅</div>
+        <h3>Reserve a Table</h3>
+        <p>Book your preferred table in seconds. No phone calls, no waiting — guaranteed seating.</p>
+      </div>
+      <div class="srv-card glass-card">
+        <div class="srv-icon">☕</div>
+        <h3>Pre-Order Menu</h3>
+        <p>Order your favourite brew ahead of time. Your coffee is ready the moment you walk in.</p>
+      </div>
+      <div class="srv-card glass-card">
+        <div class="srv-icon">📊</div>
+        <h3>Owner Dashboard</h3>
+        <p>Real-time analytics, order management, and staff coordination — all from one dashboard.</p>
+      </div>
+      <div class="srv-card glass-card">
+        <div class="srv-icon">⚡</div>
+        <h3>Live Order Tracking</h3>
+        <p>Watch your order go from placed to ready with live status updates in real time.</p>
+      </div>
+      <div class="srv-card glass-card">
+        <div class="srv-icon">🔒</div>
+        <h3>Secure Payments</h3>
+        <p>UPI, card, and cash options with encrypted, hassle-free transactions every time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section alt-section" id="how-section">
+    <div class="sec-head">
+      <p class="eyebrow">✦ How It Works ✦</p>
+      <h2>Three Simple Steps<br/><em>To Your Perfect Cup</em></h2>
+    </div>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h3>Create Your Account</h3>
+          <p>Sign up as a Customer to order and book tables, or as a Cafe Owner to manage your cafe.</p>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h3>Discover & Choose</h3>
+          <p>Customers browse cafes and menus. Owners set up their cafe profile, menu, and tables.</p>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h3>Order & Enjoy</h3>
+          <p>Place your order, track it live, and enjoy your brew — seamlessly and without any waiting.</p>
+        </div>
+        <div class="step-arrow last"></div>
+      </div>
+    </div>
+    <div class="how-roles">
+      <div class="role-card glass-card" onclick="showPage('page-register')">
+        <span class="role-emoji">👤</span>
+        <h3>I'm a Customer</h3>
+        <p>Discover cafes, book tables & pre-order your brews</p>
+        <button class="btn-fill">Start Ordering →</button>
+      </div>
+      <div class="role-divider">or</div>
+      <div class="role-card glass-card" onclick="showPage('page-register')">
+        <span class="role-emoji">🏪</span>
+        <h3>I'm a Cafe Owner</h3>
+        <p>Manage your cafe, menu, and orders from one dashboard</p>
+        <button class="btn-outline">Manage My Cafe →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-brand">☕ <strong>Brew & Co</strong> — Crafting moments, one cup at a time.</div>
+    <p>© 2024 Brew & Co. All rights reserved.</p>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: REGISTER
+═══════════════════════════════════════════════ -->
+<div id="page-register" class="page">
+  <div class="auth-page">
+    <div class="auth-blobs">
+      <div class="b b1"></div><div class="b b3"></div>
+    </div>
+    <div class="auth-left">
+      <div class="auth-brand" onclick="showPage('page-home')">☕ <strong>Brew & Co</strong></div>
+      <h2>Join the<br/><em>Coffee Community</em></h2>
+      <p>Create your account and start your seamless coffee experience today.</p>
+      <div class="auth-art">
+        <div class="art-cup">
+          <div class="steam st1"></div><div class="steam st2"></div>
+          <div class="cup-body sm"><div class="liquid"></div><div class="foam"></div></div>
+          <div class="cup-handle"></div>
+          <div class="saucer sm"></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right glass-panel">
+      <h3>Create Account</h3>
+      <p class="auth-sub">Fill in your details to get started</p>
+
+      <!-- Role Toggle -->
+      <div class="role-toggle" id="reg-role-toggle">
+        <button class="role-btn active" data-role="customer" onclick="setRole('customer')">👤 Customer</button>
+        <button class="role-btn" data-role="owner" onclick="setRole('owner')">🏪 Cafe Owner</button>
+      </div>
+
+      <div class="form-row">
+        <div class="fg">
+          <label>First Name</label>
+          <input type="text" id="reg-fname" class="fi" placeholder="Arjun"/>
+          <span class="err" id="err-fname"></span>
+        </div>
+        <div class="fg">
+          <label>Last Name</label>
+          <input type="text" id="reg-lname" class="fi" placeholder="Sharma"/>
+          <span class="err" id="err-lname"></span>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Email Address</label>
+        <input type="text" id="reg-email" class="fi" placeholder="arjun@email.com"/>
+        <span class="err" id="err-reg-email"></span>
+      </div>
+      <div class="fg">
+        <label>Phone Number</label>
+        <input type="text" id="reg-phone" class="fi" placeholder="+91 98765 43210"/>
+        <span class="err" id="err-phone"></span>
+      </div>
+
+      <!-- Owner-only field -->
+      <div class="fg owner-field" id="cafe-name-field" style="display:none">
+        <label>Cafe Name</label>
+        <input type="text" id="reg-cafename" class="fi" placeholder="Your Cafe Name"/>
+        <span class="err" id="err-cafename"></span>
+      </div>
+
+      <div class="fg">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="reg-pw" class="fi" placeholder="Min 8, max 16 characters"/>
+          <button class="eye-btn" onclick="togglePw('reg-pw','eye1')" id="eye1">👁</button>
+        </div>
+        <div class="pw-rules" id="pw-rules">
+          <span id="rule-len">✗ 8–16 characters</span>
+          <span id="rule-up">✗ 1 uppercase</span>
+          <span id="rule-lo">✗ 1 lowercase</span>
+          <span id="rule-sp">✗ 1 special character</span>
+        </div>
+        <span class="err" id="err-reg-pw"></span>
+      </div>
+      <div class="fg">
+        <label>Confirm Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="reg-cpw" class="fi" placeholder="Repeat password"/>
+          <button class="eye-btn" onclick="togglePw('reg-cpw','eye2')" id="eye2">👁</button>
+        </div>
+        <span class="err" id="err-cpw"></span>
+      </div>
+      <div class="fg check-row">
+        <label class="chk-label"><input type="checkbox" id="reg-terms"/> I agree to the <a href="#" class="lnk">Terms of Service</a></label>
+        <span class="err" id="err-terms"></span>
+      </div>
+
+      <button class="btn-fill full" id="reg-btn" onclick="handleRegister()">Create Account</button>
+      <p class="switch-link">Already have an account? <a onclick="showPage('page-login')" class="lnk">Sign In</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: LOGIN
+═══════════════════════════════════════════════ -->
+<div id="page-login" class="page">
+  <div class="auth-page">
+    <div class="auth-blobs">
+      <div class="b b2"></div><div class="b b3"></div>
+    </div>
+    <div class="auth-left">
+      <div class="auth-brand" onclick="showPage('page-home')">☕ <strong>Brew & Co</strong></div>
+      <h2>Welcome<br/><em>Back</em></h2>
+      <p>Your perfect cup is just a sign-in away. Let's pick up where you left off.</p>
+      <div class="auth-art">
+        <div class="art-cup">
+          <div class="steam st1"></div><div class="steam st2"></div>
+          <div class="cup-body sm"><div class="liquid"></div><div class="foam"></div></div>
+          <div class="cup-handle"></div>
+          <div class="saucer sm"></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right glass-panel">
+      <h3>Sign In</h3>
+      <p class="auth-sub">Welcome back to Brew & Co</p>
+
+      <div class="fg">
+        <label>Email Address</label>
+        <input type="text" id="login-email" class="fi" placeholder="your@email.com"/>
+        <span class="err" id="err-login-email"></span>
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="login-pw" class="fi" placeholder="Your password"/>
+          <button class="eye-btn" onclick="togglePw('login-pw','eye3')" id="eye3">👁</button>
+        </div>
+        <span class="err" id="err-login-pw"></span>
+      </div>
+      <div class="fg forgot-row">
+        <a href="#" class="lnk">Forgot password?</a>
+      </div>
+
+      <div class="login-msg" id="login-msg"></div>
+
+      <button class="btn-fill full" onclick="handleLogin()">Sign In</button>
+
+      <!-- DEMO QUICK LOGIN -->
+      <div class="demo-logins">
+        <p class="demo-label">— Demo Quick Login —</p>
+        <button class="demo-btn" onclick="demoLogin('customer')">👤 Login as Customer</button>
+        <button class="demo-btn" onclick="demoLogin('owner')">🏪 Login as Cafe Owner</button>
+      </div>
+
+      <p class="switch-link">No account yet? <a onclick="showPage('page-register')" class="lnk">Join Free</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: CUSTOMER DASHBOARD
+═══════════════════════════════════════════════ -->
+<div id="page-customer" class="page">
+  <!-- Top nav -->
+  <nav class="dash-nav glass-nav">
+    <div class="nav-brand">☕ <span>Brew <em>&</em> Co</span></div>
+    <div class="dash-steps" id="cust-steps">
+      <span class="dstep active" id="dstep-1">① Select Cafe</span>
+      <span class="dstep" id="dstep-2">② Browse Menu</span>
+      <span class="dstep" id="dstep-3">③ Book Table</span>
+    </div>
+    <div class="nav-actions">
+      <span class="user-chip" id="cust-name-chip">👤 Customer</span>
+      <button class="btn-outline sm" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- STEP 1: Select Cafe -->
+  <div id="cust-step1" class="dash-content">
+    <div class="dash-header">
+      <h2>Find Your <em>Perfect Cafe</em></h2>
+      <p>Select a cafe to explore its menu and book a table</p>
+    </div>
+    <div class="cafe-grid" id="cafe-grid">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- STEP 2: Menu -->
+  <div id="cust-step2" class="dash-content" style="display:none">
+    <div class="dash-header with-back">
+      <button class="back-btn" onclick="custGo(1)">← Back</button>
+      <div>
+        <h2 id="selected-cafe-name">Cafe Name</h2>
+        <p id="selected-cafe-loc">Location</p>
+      </div>
+      <button class="btn-fill" onclick="custGo(3)">Book a Table →</button>
+    </div>
+    <div class="menu-tabs" id="menu-tabs">
+      <button class="tab active" data-cat="all">All</button>
+      <button class="tab" data-cat="espresso">Espresso</button>
+      <button class="tab" data-cat="cold">Cold Brews</button>
+      <button class="tab" data-cat="tea">Teas</button>
+      <button class="tab" data-cat="food">Food</button>
+    </div>
+    <div class="menu-grid" id="menu-grid"></div>
+    <!-- Cart summary bar -->
+    <div class="cart-bar glass-panel" id="cart-bar" style="display:none">
+      <span id="cart-summary">0 items — ₹0</span>
+      <button class="btn-fill" onclick="custGo(3)">Proceed to Book Table →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Table Booking -->
+  <div id="cust-step3" class="dash-content" style="display:none">
+    <div class="dash-header with-back">
+      <button class="back-btn" onclick="custGo(2)">← Back to Menu</button>
+      <h2>Book a <em>Table</em></h2>
+    </div>
+    <div class="booking-layout">
+      <div class="booking-form glass-panel">
+        <h3>Reservation Details</h3>
+        <div class="fg">
+          <label>Date</label>
+          <input type="date" id="bk-date" class="fi"/>
+        </div>
+        <div class="form-row">
+          <div class="fg">
+            <label>Time</label>
+            <select id="bk-time" class="fi">
+              <option value="">Select...</option>
+              <option>08:00 AM</option><option>09:00 AM</option><option>10:00 AM</option>
+              <option>11:00 AM</option><option>12:00 PM</option><option>01:00 PM</option>
+              <option>02:00 PM</option><option>03:00 PM</option><option>04:00 PM</option>
+              <option>05:00 PM</option><option>06:00 PM</option><option>07:00 PM</option>
+              <option>08:00 PM</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Guests</label>
+            <select id="bk-guests" class="fi">
+              <option>1</option><option selected>2</option><option>3</option>
+              <option>4</option><option>5+</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Select Table</label>
+          <div class="table-map" id="table-map"><!-- rendered by JS --></div>
+          <div class="table-legend">
+            <span><span class="ldot avail"></span> Available</span>
+            <span><span class="ldot booked"></span> Booked</span>
+            <span><span class="ldot sel"></span> Selected</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Special Request</label>
+          <textarea id="bk-note" class="fi" rows="3" placeholder="Any special requirements..."></textarea>
+        </div>
+
+        <!-- Order Summary if cart has items -->
+        <div id="bk-order-summary" class="order-summary-box" style="display:none">
+          <h4>Pre-Order Summary</h4>
+          <div id="bk-order-items"></div>
+          <div class="bk-total-row"><span>Total</span><strong id="bk-total">₹0</strong></div>
+        </div>
+
+        <button class="btn-fill full" onclick="confirmBooking()">Confirm Booking ☕</button>
+      </div>
+      <div class="booking-info glass-card">
+        <h3>Your Cart</h3>
+        <div id="cart-items-list">
+          <p class="no-items">No items added yet.<br/>Browse the menu to add items.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKING SUCCESS -->
+  <div id="cust-success" class="dash-content" style="display:none">
+    <div class="success-wrap">
+      <div class="success-icon">✓</div>
+      <h2>Booking Confirmed!</h2>
+      <p>Your table has been reserved successfully.</p>
+      <div class="confirm-card glass-panel">
+        <div class="confirm-row"><span>Cafe</span><strong id="conf-cafe"></strong></div>
+        <div class="confirm-row"><span>Date & Time</span><strong id="conf-dt"></strong></div>
+        <div class="confirm-row"><span>Table</span><strong id="conf-table"></strong></div>
+        <div class="confirm-row"><span>Guests</span><strong id="conf-guests"></strong></div>
+        <div class="confirm-row"><span>Booking Ref</span><strong id="conf-ref"></strong></div>
+      </div>
+      <button class="btn-fill" onclick="custGo(1)">Make Another Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: CAFE OWNER DASHBOARD
+═══════════════════════════════════════════════ -->
+<div id="page-owner" class="page">
+  <nav class="dash-nav glass-nav">
+    <div class="nav-brand">☕ <span>Brew <em>&</em> Co</span></div>
+    <div class="owner-tabs">
+      <button class="otab active" onclick="ownerTab('analytics')">📊 Analytics</button>
+      <button class="otab" onclick="ownerTab('orders')">🔔 Orders</button>
+    </div>
+    <div class="nav-actions">
+      <span class="user-chip" id="owner-name-chip">🏪 Owner</span>
+      <button class="btn-outline sm" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- ANALYTICS -->
+  <div id="owner-analytics" class="dash-content">
+    <div class="dash-header">
+      <h2>Dashboard <em>Analytics</em></h2>
+      <p id="owner-cafe-label">Your Cafe Overview</p>
+    </div>
+    <div class="analytics-grid">
+      <div class="stat-card glass-panel">
+        <div class="stat-icon">☕</div>
+        <div class="stat-info">
+          <span class="stat-val" id="stat-orders">47</span>
+          <span class="stat-lbl">Today's Orders</span>
+        </div>
+      </div>
+      <div class="stat-card glass-panel">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <span class="stat-val" id="stat-revenue">₹8,420</span>
+          <span class="stat-lbl">Today's Revenue</span>
+        </div>
+      </div>
+      <div class="stat-card glass-panel">
+        <div class="stat-icon">🪑</div>
+        <div class="stat-info">
+          <span class="stat-val" id="stat-tables">6/10</span>
+          <span class="stat-lbl">Tables Occupied</span>
+        </div>
+      </div>
+      <div class="stat-card glass-panel">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-info">
+          <span class="stat-val" id="stat-rating">4.8</span>
+          <span class="stat-lbl">Avg Rating</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-row">
+      <div class="chart-card glass-panel">
+        <h3>Orders This Week</h3>
+        <div class="bar-chart" id="bar-chart"><!-- rendered by JS --></div>
+      </div>
+      <div class="top-items-card glass-panel">
+        <h3>Top Selling Items</h3>
+        <div class="top-items" id="top-items"><!-- rendered by JS --></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="owner-orders" class="dash-content" style="display:none">
+    <div class="dash-header">
+      <h2>Incoming <em>Orders</em></h2>
+      <p>Accept or reject orders from customers</p>
+    </div>
+    <div class="orders-filter">
+      <button class="filter-btn active" onclick="filterOrders('all',this)">All</button>
+      <button class="filter-btn" onclick="filterOrders('pending',this)">Pending</button>
+      <button class="filter-btn" onclick="filterOrders('accepted',this)">Accepted</button>
+      <button class="filter-btn" onclick="filterOrders('rejected',this)">Rejected</button>
+    </div>
+    <div class="orders-list" id="orders-list"><!-- rendered by JS --></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

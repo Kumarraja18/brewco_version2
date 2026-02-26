@@ -9,7 +9,7 @@ const api = axios.create({
 // URLs that should NEVER trigger the 401-refresh-redirect cycle
 const AUTH_URLS = ['/auth/me', '/auth/login', '/auth/refresh', '/auth/logout', '/auth/register'];
 
-// Response interceptor for 401 → auto-refresh (ONLY for protected API calls)
+// Response interceptor for 401 ΓåÆ auto-refresh (ONLY for protected API calls)
 api.interceptors.response.use(
   response => response,
   async error => {
@@ -30,7 +30,7 @@ api.interceptors.response.use(
         await axios.post(`${apiUrl}/auth/refresh`, {}, { withCredentials: true });
         return api(originalRequest);
       } catch (refreshError) {
-        // Don't force redirect — let the component handle it
+        // Don't force redirect ΓÇö let the component handle it
         return Promise.reject(refreshError);
       }
     }

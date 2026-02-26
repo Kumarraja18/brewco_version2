@@ -16,11 +16,20 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.security.web.access.AccessDeniedHandler;
+
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -38,19 +47,43 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(unauthorizedEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/public/**", "/api/register/**", "/api/debug/**",
-                                "/api/cafes/**")
-                        .permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/cafe-owner/**", "/api/owner/**").hasRole("CAFE_OWNER")
-                        .requestMatchers("/api/chef/**").hasRole("CHEF")
-                        .requestMatchers("/api/waiter/**").hasRole("WAITER")
-                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/public/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/register/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/debug/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/cafes/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/admin/**")).hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/api/cafe-owner/**")).hasAuthority("ROLE_CAFE_OWNER")
+                        .requestMatchers(new AntPathRequestMatcher("/api/owner/**")).hasAuthority("ROLE_CAFE_OWNER")
+                        .requestMatchers(new AntPathRequestMatcher("/api/chef/**")).hasAuthority("ROLE_CHEF")
+                        .requestMatchers(new AntPathRequestMatcher("/api/waiter/**")).hasAuthority("ROLE_WAITER")
+                        .requestMatchers(new AntPathRequestMatcher("/api/customer/**")).hasAuthority("ROLE_CUSTOMER")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint unauthorizedEntryPoint() {
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"status\": 401, \"error\": \"Unauthorized\", \"message\": \"" + authException.getMessage() + "\"}");
+        };
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"status\": 403, \"error\": \"Forbidden\", \"message\": \"" + accessDeniedException.getMessage() + "\"}");
+        };
     }
 
     @Bean
@@ -73,8 +106,8 @@ public class SecurityConfig {
                 "http://localhost:5174",
                 "http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Cookie"));
-        configuration.setExposedHeaders(List.of("Set-Cookie"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(List.of("Set-Cookie", "Authorization"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -11,175 +11,336 @@ export default function CafeSetup() {
     const [step, setStep] = useState(1)
     const [loading, setLoading] = useState(false)
 
+    const today = new Date().toLocaleDateString()
+
     const [formData, setFormData] = useState({
-        name: '', description: '', address: '', city: '', state: '', zipCode: '',
-        contactNumber: '', email: user?.email || '',
-        openingTime: '08:00', closingTime: '22:00',
-        gstNumber: '', fssaiLicense: '', foodLicenseNumber: ''
+        // 1️⃣ Basic Info
+        name: '',
+        ownerName: user ? `${user.firstName} ${user.lastName}` : '',
+        contactNumber: '',
+        email: user?.email || '',
+        openingTime: '08:00',
+        closingTime: '22:00',
+
+        // 2️⃣ Address
+        street: '',
+        city: '',
+        state: '',
+        pincode: '',
+
+        // 3️⃣ Business
+        businessType: '',
+        fssaiNumber: '',
+        gstNumber: '',
+
+        // 4️⃣ Bank
+        accountHolderName: '',
+        accountNumber: '',
+        ifscCode: '',
+        upiId: '',
+
+        // 5️⃣ Services
+        totalTables: '',
+        seatingCapacity: '',
+        parkingAvailable: false,
+        freeWifi: false,
+        airConditioned: false,
+        homeDelivery: false,
+        takeaway: false,
+        dineIn: false,
+
+        // 7️⃣ Photos
+        logo: null,
+        exterior: null,
+        interior: null,
+        menuPhoto: null,
+        foodPhoto: null
     })
 
     const handleChange = e => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
+        const { name, value, type, checked } = e.target
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }))
+    }
+
+    const handleFileChange = e => {
+        const { name, files } = e.target
+        setFormData(prev => ({
+            ...prev,
+            [name]: files[0]
+        }))
     }
 
     const handleSubmit = async () => {
-        if (!formData.name || !formData.address || !formData.city) {
-            toast.error('Please fill in required fields')
-            return
-        }
         setLoading(true)
         try {
-            await api.post('/cafe-owner/cafes', formData)
-            // Mark profile as complete
+            // Prepare the JSON payload to match the backend's expected fields
+            const payload = {
+                name: formData.name,
+                description: `A ${formData.businessType} café with seating for ${formData.seatingCapacity}.`,
+                street: formData.street,
+                city: formData.city,
+                state: formData.state,
+                pincode: formData.pincode,
+                contactNumber: formData.contactNumber,
+                email: formData.email,
+                openingTime: formData.openingTime,
+                closingTime: formData.closingTime,
+                gstNumber: formData.gstNumber,
+                fssaiNumber: formData.fssaiNumber
+            };
+
+            // Use JSON for basic data submission
+            await api.post('/cafe-owner/cafes', payload);
+
             await api.put('/auth/profile', { isProfileComplete: true })
-            toast.success('Café registered successfully! Pending admin verification.')
+
+            toast.success('Application submitted successfully!')
             navigate('/cafe-owner-dashboard')
         } catch (err) {
-            toast.error(err.response?.data?.error || 'Failed to create café')
+            toast.error(err.response?.data?.error || 'Submission failed')
         }
         setLoading(false)
     }
 
     const steps = [
-        { num: 1, label: 'Basic Info' },
-        { num: 2, label: 'Location' },
-        { num: 3, label: 'Licenses' }
+        'Basic Info',
+        'Address',
+        'Business',
+        'Bank',
+        'Services',
+        'Review',
+        'Photos'
     ]
 
     return (
         <div className="dashboard-page">
             <div className="setup-wizard">
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    <h1 className="dashboard-page__title">Set Up Your Café</h1>
-                    <p className="dashboard-page__subtitle">Complete these steps to start managing your café on Brew & Co</p>
-                </div>
 
-                {/* Steps */}
+                <h1 className="dashboard-page__title">Set Up Your Café</h1>
+
+                {/* Step Indicator */}
                 <div className="setup-wizard__steps">
-                    {steps.map((s, i) => (
-                        <React.Fragment key={s.num}>
-                            <div className={`setup-wizard__step ${step === s.num ? 'setup-wizard__step--active' : ''} ${step > s.num ? 'setup-wizard__step--done' : ''}`}>
-                                <div className="setup-wizard__step-num">
-                                    {step > s.num ? '✓' : s.num}
-                                </div>
-                                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: step >= s.num ? 'var(--brew-dark)' : 'var(--brew-muted)' }}>
-                                    {s.label}
-                                </span>
+                    {steps.map((label, index) => (
+                        <div
+                            key={index}
+                            className={`setup-wizard__step ${step === index + 1 ? 'setup-wizard__step--active' : ''
+                                }`}
+                        >
+                            <div className="setup-wizard__step-num">
+                                {step > index + 1 ? '✓' : index + 1}
                             </div>
-                            {i < steps.length - 1 && <div className="setup-wizard__step-line" />}
-                        </React.Fragment>
+                            <span>{label}</span>
+                        </div>
                     ))}
                 </div>
 
                 <div className="glass-card" style={{ padding: '2rem' }}>
-                    {/* Step 1: Basic Info */}
+
+                    {/* 1️⃣ BASIC INFO */}
                     {step === 1 && (
                         <>
-                            <h3 style={{ fontWeight: 700, color: 'var(--brew-dark)', marginBottom: '1.5rem' }}>Café Details</h3>
-                            <div className="brew-field">
-                                <label className="brew-label">Café Name *</label>
-                                <input className="brew-input" name="name" value={formData.name} onChange={handleChange}
-                                    placeholder="e.g., The Brew Haven" required />
-                            </div>
-                            <div className="brew-field">
-                                <label className="brew-label">Description</label>
-                                <textarea className="brew-input" name="description" value={formData.description} onChange={handleChange}
-                                    placeholder="Tell customers about your café..." rows={3} style={{ resize: 'vertical' }} />
-                            </div>
-                            <div className="brew-field-row">
-                                <div className="brew-field">
-                                    <label className="brew-label">Contact Number</label>
-                                    <input className="brew-input" name="contactNumber" value={formData.contactNumber} onChange={handleChange}
-                                        placeholder="+91 98765 43210" />
-                                </div>
-                                <div className="brew-field">
-                                    <label className="brew-label">Café Email</label>
-                                    <input className="brew-input" name="email" value={formData.email} onChange={handleChange}
-                                        placeholder="cafe@example.com" />
-                                </div>
-                            </div>
-                            <div className="brew-field-row">
-                                <div className="brew-field">
-                                    <label className="brew-label">Opening Time</label>
-                                    <input className="brew-input" type="time" name="openingTime" value={formData.openingTime} onChange={handleChange} />
-                                </div>
-                                <div className="brew-field">
-                                    <label className="brew-label">Closing Time</label>
-                                    <input className="brew-input" type="time" name="closingTime" value={formData.closingTime} onChange={handleChange} />
-                                </div>
+                            <h3>Basic Information</h3>
+                            <input className="brew-input" name="name" placeholder="Cafe Name" value={formData.name} onChange={handleChange} />
+                            <input className="brew-input" name="ownerName" placeholder="Owner Name" value={formData.ownerName} onChange={handleChange} />
+                            <input className="brew-input" name="contactNumber" placeholder="Contact Number" value={formData.contactNumber} onChange={handleChange} />
+                            <input className="brew-input" name="email" placeholder="Email" value={formData.email} onChange={handleChange} />
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <input type="time" className="brew-input" name="openingTime" value={formData.openingTime} onChange={handleChange} />
+                                <input type="time" className="brew-input" name="closingTime" value={formData.closingTime} onChange={handleChange} />
                             </div>
                         </>
                     )}
 
-                    {/* Step 2: Location */}
+                    {/* 2️⃣ ADDRESS */}
                     {step === 2 && (
                         <>
-                            <h3 style={{ fontWeight: 700, color: 'var(--brew-dark)', marginBottom: '1.5rem' }}>Location</h3>
-                            <div className="brew-field">
-                                <label className="brew-label">Full Address *</label>
-                                <input className="brew-input" name="address" value={formData.address} onChange={handleChange}
-                                    placeholder="Street address" required />
-                            </div>
-                            <div className="brew-field-row">
-                                <div className="brew-field">
-                                    <label className="brew-label">City *</label>
-                                    <input className="brew-input" name="city" value={formData.city} onChange={handleChange}
-                                        placeholder="City" required />
-                                </div>
-                                <div className="brew-field">
-                                    <label className="brew-label">State</label>
-                                    <input className="brew-input" name="state" value={formData.state} onChange={handleChange}
-                                        placeholder="State" />
-                                </div>
-                            </div>
-                            <div className="brew-field">
-                                <label className="brew-label">ZIP Code</label>
-                                <input className="brew-input" name="zipCode" value={formData.zipCode} onChange={handleChange}
-                                    placeholder="PIN / ZIP code" />
-                            </div>
+                            <h3>Address</h3>
+                            <input className="brew-input" name="street" placeholder="Street" value={formData.street} onChange={handleChange} />
+                            <input className="brew-input" name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+                            <input className="brew-input" name="state" placeholder="State" value={formData.state} onChange={handleChange} />
+                            <input className="brew-input" name="pincode" placeholder="Pincode" value={formData.pincode} onChange={handleChange} />
                         </>
                     )}
 
-                    {/* Step 3: Licenses */}
+                    {/* 3️⃣ BUSINESS */}
                     {step === 3 && (
                         <>
-                            <h3 style={{ fontWeight: 700, color: 'var(--brew-dark)', marginBottom: '1.5rem' }}>Business Licenses</h3>
-                            <div className="brew-field">
-                                <label className="brew-label">GST Number</label>
-                                <input className="brew-input" name="gstNumber" value={formData.gstNumber} onChange={handleChange}
-                                    placeholder="22AAAAA0000A1Z5" />
+                            <h3>Business Details</h3>
+                            <input className="brew-input" name="businessType" placeholder="Business Type" value={formData.businessType} onChange={handleChange} />
+                            <input className="brew-input" name="fssaiNumber" placeholder="FSSAI Number" value={formData.fssaiNumber} onChange={handleChange} />
+                            <input className="brew-input" name="gstNumber" placeholder="GST Number" value={formData.gstNumber} onChange={handleChange} />
+                        </>
+                    )}
+
+                    {/* 4️⃣ BANK */}
+                    {step === 4 && (
+                        <>
+                            <h3>Bank Details</h3>
+                            <input className="brew-input" name="accountHolderName" placeholder="Account Holder Name" value={formData.accountHolderName} onChange={handleChange} />
+                            <input className="brew-input" name="accountNumber" placeholder="Account Number" value={formData.accountNumber} onChange={handleChange} />
+                            <input className="brew-input" name="ifscCode" placeholder="IFSC Code" value={formData.ifscCode} onChange={handleChange} />
+                            <input className="brew-input" name="upiId" placeholder="UPI ID" value={formData.upiId} onChange={handleChange} />
+                        </>
+                    )}
+
+                    {/* 5️⃣ SERVICES */}
+                    {step === 5 && (
+                        <>
+                            <h3 style={{
+                                fontWeight: 700,
+                                marginBottom: '1.5rem',
+                                color: '#2C2C2C'
+                            }}>
+                                Services & Facilities
+                            </h3>
+
+                            {/* Capacity Section */}
+                            <div style={{
+                                background: '#f9fafb',
+                                padding: '1.5rem',
+                                borderRadius: '12px',
+                                marginBottom: '1.5rem',
+                                border: '1px solid #e5e7eb'
+                            }}>
+                                <h4 style={{ marginBottom: '1rem', fontWeight: 600 }}>
+                                    Capacity Details
+                                </h4>
+
+                                <div style={{
+                                    display: 'flex',
+                                    gap: '1rem',
+                                    flexWrap: 'wrap'
+                                }}>
+                                    <div style={{ flex: 1, minWidth: '220px' }}>
+                                        <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Total Tables</label>
+                                        <input
+                                            type="number"
+                                            name="totalTables"
+                                            value={formData.totalTables}
+                                            onChange={handleChange}
+                                            placeholder="Enter total tables"
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                marginTop: '6px',
+                                                borderRadius: '8px',
+                                                border: '1px solid #d1d5db'
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div style={{ flex: 1, minWidth: '220px' }}>
+                                        <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Seating Capacity</label>
+                                        <input
+                                            type="number"
+                                            name="seatingCapacity"
+                                            value={formData.seatingCapacity}
+                                            onChange={handleChange}
+                                            placeholder="Enter seating capacity"
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                marginTop: '6px',
+                                                borderRadius: '8px',
+                                                border: '1px solid #d1d5db'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                            <div className="brew-field">
-                                <label className="brew-label">FSSAI License Number</label>
-                                <input className="brew-input" name="fssaiLicense" value={formData.fssaiLicense} onChange={handleChange}
-                                    placeholder="FSSAI license number" />
-                            </div>
-                            <div className="brew-field">
-                                <label className="brew-label">Food License Number</label>
-                                <input className="brew-input" name="foodLicenseNumber" value={formData.foodLicenseNumber} onChange={handleChange}
-                                    placeholder="Food license number" />
-                            </div>
-                            <div className="glass-card" style={{ background: '#FEF3C7', border: '1px solid #F0C040', marginTop: '1rem', padding: '1rem' }}>
-                                <p style={{ fontSize: '0.85rem', color: '#92400E', fontWeight: 600 }}>
-                                    📋 Your café will be reviewed by our admin team. You'll receive an email once verified.
-                                </p>
+
+                            {/* Facilities Section */}
+                            <div style={{
+                                background: '#f9fafb',
+                                padding: '1.5rem',
+                                borderRadius: '12px',
+                                border: '1px solid #e5e7eb'
+                            }}>
+                                <h4 style={{ marginBottom: '1rem', fontWeight: 600 }}>
+                                    Available Services
+                                </h4>
+
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                                    gap: '12px'
+                                }}>
+                                    {[
+                                        { name: 'parkingAvailable', label: 'Parking Available' },
+                                        { name: 'freeWifi', label: 'Free WiFi' },
+                                        { name: 'airConditioned', label: 'Air Conditioned' },
+                                        { name: 'homeDelivery', label: 'Home Delivery' },
+                                        { name: 'takeaway', label: 'Takeaway' },
+                                        { name: 'dineIn', label: 'Dine In' }
+                                    ].map(service => (
+                                        <label
+                                            key={service.name}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '10px',
+                                                padding: '10px 14px',
+                                                borderRadius: '8px',
+                                                border: '1px solid #e5e7eb',
+                                                background: '#ffffff',
+                                                cursor: 'pointer',
+                                                fontWeight: 500
+                                            }}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                name={service.name}
+                                                checked={formData[service.name]}
+                                                onChange={handleChange}
+                                                style={{ width: '16px', height: '16px' }}
+                                            />
+                                            {service.label}
+                                        </label>
+                                    ))}
+                                </div>
                             </div>
                         </>
                     )}
 
-                    {/* Navigation */}
+                    {/* 6️⃣ REVIEW */}
+                    {step === 6 && (
+                        <>
+                            <h3>Review Application</h3>
+                            <p><strong>Date:</strong> {today}</p>
+                            <p><strong>Status:</strong> Pending</p>
+                            <p><strong>Verification:</strong> Unverified</p>
+                        </>
+                    )}
+
+                    {/* 7️⃣ PHOTOS */}
+                    {step === 7 && (
+                        <>
+                            <h3>Upload Photos</h3>
+                            <input type="file" name="logo" onChange={handleFileChange} />
+                            <input type="file" name="exterior" onChange={handleFileChange} />
+                            <input type="file" name="interior" onChange={handleFileChange} />
+                            <input type="file" name="menuPhoto" onChange={handleFileChange} />
+                            <input type="file" name="foodPhoto" onChange={handleFileChange} />
+                        </>
+                    )}
+
+                    {/* Navigation Buttons */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
                         {step > 1 ? (
-                            <button className="brew-btn brew-btn--secondary" onClick={() => setStep(step - 1)}>← Previous</button>
+                            <button className="brew-btn brew-btn--secondary" onClick={() => setStep(step - 1)}>← Back</button>
                         ) : <div />}
-                        {step < 3 ? (
+                        {step < 7 ? (
                             <button className="brew-btn brew-btn--primary" onClick={() => setStep(step + 1)}>Next →</button>
                         ) : (
-                            <button className="brew-btn brew-btn--primary brew-btn--lg" onClick={handleSubmit} disabled={loading}>
-                                {loading ? 'Submitting...' : 'Submit Café Application'}
+                            <button className="brew-btn brew-btn--primary" onClick={handleSubmit} disabled={loading}>
+                                {loading ? 'Submitting...' : 'Submit Application'}
                             </button>
                         )}
                     </div>
+
                 </div>
             </div>
         </div>

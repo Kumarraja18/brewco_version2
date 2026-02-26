@@ -24,7 +24,7 @@ export default function Home() {
     return () => clearTimeout(timeout);
   }, [location]);
   return (
-    <div className="page home">
+    <div className="page-home" style={{ maxWidth: "1200px" }}>
       <section className="hero card">
         <div className="hero-content">
           <h1>Welcome to brew & co</h1>
@@ -67,50 +67,50 @@ export default function Home() {
           <h2>How brew & co Works</h2>
           <div className="steps-wrapper">
             <ol className="steps">
-           <li>
-  <div>
-    <strong>Create Account:</strong>
-    <span> Register and complete your profile</span>
-  </div>
-</li>
+              <li>
+                <div>
+                  <strong>Create Account:</strong>
+                  <span> Register and complete your profile</span>
+                </div>
+              </li>
 
-<li>
-  <div>
-    <strong>Browse Locations:</strong>
-    <span> Explore our Brew & Co locations</span>
-  </div>
-</li>
+              <li>
+                <div>
+                  <strong>Browse Locations:</strong>
+                  <span> Explore our Brew & Co locations</span>
+                </div>
+              </li>
 
-<li>
-  <div>
-    <strong>Reserve Seat:</strong>
-    <span> Pick your favorite spot and time</span>
-  </div>
-</li>
+              <li>
+                <div>
+                  <strong>Reserve Seat:</strong>
+                  <span> Pick your favorite spot and time</span>
+                </div>
+              </li>
 
             </ol>
             <ol className="steps" style={{ counterReset: 'step 3' }}>
-             <li>
-  <div>
-    <strong>Order Ahead:</strong>
-    <span> Choose from our signature menu with Varieties</span>
-  </div>
-</li>
+              <li>
+                <div>
+                  <strong>Order Ahead:</strong>
+                  <span> Choose from our signature menu with Varieties</span>
+                </div>
+              </li>
 
 
 
-<li>
-  <div>
-    <strong>Relax & Enjoy:</strong>
-    <span> Track your order and savor the moment</span>
-  </div>
-</li>
-<li>
-  <div>
-    <strong>Pay Online:</strong>
-    <span> Quick and secure payment</span>
-  </div>
-</li>
+              <li>
+                <div>
+                  <strong>Relax & Enjoy:</strong>
+                  <span> Track your order and savor the moment</span>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <strong>Pay Online:</strong>
+                  <span> Quick and secure payment</span>
+                </div>
+              </li>
 
             </ol>
           </div>

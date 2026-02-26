@@ -1,0 +1,353 @@
+/* Customer Pages Layout */
+.customer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+.section-header {
+    margin-bottom: 25px;
+}
+
+.section-header h1 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2e241f;
+}
+
+/* Featured Carousel */
+.cafe-carousel {
+    margin-bottom: 50px;
+}
+
+.carousel-track {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 15px;
+    scrollbar-width: none; /* Firefox */
+}
+
+.carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.carousel-card {
+    min-width: 280px;
+    height: 180px;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.carousel-card:hover {
+    transform: scale(1.02);
+}
+
+.carousel-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.carousel-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: #fff;
+}
+
+/* Cafe Grid List */
+.cafes-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+}
+
+.cafe-platform-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.cafe-platform-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.cafe-card-image-wrapper {
+    height: 200px;
+    position: relative;
+}
+
+.cafe-card-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rating-badge {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background: #10b981;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    alignItems: center;
+    gap: 4px;
+}
+
+.cafe-card-details {
+    padding: 20px;
+}
+
+.cafe-name-row h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.25rem;
+    color: #1f2937;
+}
+
+.cafe-meta-info {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 15px;
+}
+
+.cafe-tags {
+    display: flex;
+    gap: 8px;
+}
+
+.tag {
+    font-size: 0.75rem;
+    background: #f3f4f6;
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: #4b5563;
+    font-weight: 600;
+}
+
+/* Cafe Detail Styles */
+.cafe-detail-banner {
+    padding: 40px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.banner-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+}
+
+.banner-img {
+    width: 250px;
+    height: 250px;
+    border-radius: 24px;
+    object-fit: cover;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.banner-info h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: #2e241f;
+}
+
+/* Menu Section */
+.menu-section-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: grid;
+    grid-template-columns: 200px 1fr 320px;
+    gap: 40px;
+}
+
+.menu-nav {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+}
+
+.menu-nav-item {
+    padding: 12px 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-right: 3px solid transparent;
+    transition: 0.2s;
+}
+
+.menu-nav-item.active {
+    color: #6f4e37;
+    border-right-color: #6f4e37;
+}
+
+.category-group {
+    margin-bottom: 50px;
+}
+
+.category-group h2 {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    color: #2e241f;
+}
+
+.menu-item-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-type-icon {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #ccc;
+    padding: 2px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.item-type-icon::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.item-type-icon.veg::after { background: #10b981; }
+.item-type-icon.nonveg::after { background: #ef4444; }
+
+.item-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    color: #1f2937;
+}
+
+.item-price {
+    font-weight: 700;
+    color: #4b5563;
+    margin-bottom: 8px;
+}
+
+.item-desc {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    line-height: 1.5;
+}
+
+.item-image-action {
+    position: relative;
+    width: 120px;
+}
+
+.item-image-action img {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.add-btn-container {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+}
+
+.add-btn {
+    width: 100%;
+    height: 36px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #10b981;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: 0.2s;
+}
+
+.add-btn:hover {
+    background: #f9fafb;
+}
+
+/* Cart Sidebar */
+.cart-sidebar {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+    background: #fff;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid #f3f4f6;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.cart-item-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.cart-item-price {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.qty-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.qty-display {
+    font-size: 0.9rem;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+}
