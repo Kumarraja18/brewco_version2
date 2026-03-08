@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.Cookie;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -77,20 +78,16 @@ public class AuthController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String jwt = jwtUtil.generateToken(userDetails);
 
-            Cookie cookie = new Cookie("access_token", jwt);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(false); // In production with HTTPS, change this to true
-            cookie.setPath("/");
-            cookie.setMaxAge(15 * 60); // 15 mins expiry matching the token lifespan
-            servletResponse.addCookie(cookie);
+            ResponseCookie accessCookie = ResponseCookie.from("access_token", jwt)
+                    .httpOnly(true).secure(true).sameSite("None")
+                    .path("/").maxAge(15 * 60).build();
+            servletResponse.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
-            Cookie refreshCookie = new Cookie("refresh_token", refreshToken.getToken());
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(false);
-            refreshCookie.setPath("/api/auth/refresh");
-            refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-            servletResponse.addCookie(refreshCookie);
+            ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken.getToken())
+                    .httpOnly(true).secure(true).sameSite("None")
+                    .path("/").maxAge(7 * 24 * 60 * 60).build();
+            servletResponse.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
             AuthResponse response = new AuthResponse(true, "Login successful");
             response.setUser(userService.convertToDto(user));
@@ -188,12 +185,10 @@ public class AuthController {
                                             "ROLE_" + user.getRole().toUpperCase()))));
 
             // Set the new access_token cookie so browser auto-sends it
-            Cookie cookie = new Cookie("access_token", jwt);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(false);
-            cookie.setPath("/");
-            cookie.setMaxAge(15 * 60);
-            servletResponse.addCookie(cookie);
+            ResponseCookie accessCookie = ResponseCookie.from("access_token", jwt)
+                    .httpOnly(true).secure(true).sameSite("None")
+                    .path("/").maxAge(15 * 60).build();
+            servletResponse.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
             AuthResponse response = new AuthResponse(true, "Token refreshed successfully");
             response.setToken(jwt); // Temporary compatibility shim
@@ -217,17 +212,15 @@ public class AuthController {
             // ignore
         }
 
-        Cookie getCookie = new Cookie("access_token", null);
-        getCookie.setMaxAge(0);
-        getCookie.setPath("/");
-        getCookie.setHttpOnly(true);
-        response.addCookie(getCookie);
+        ResponseCookie clearAccess = ResponseCookie.from("access_token", "")
+                .httpOnly(true).secure(true).sameSite("None")
+                .path("/").maxAge(0).build();
+        response.addHeader(HttpHeaders.SET_COOKIE, clearAccess.toString());
 
-        Cookie refreshCookie = new Cookie("refresh_token", null);
-        refreshCookie.setMaxAge(0);
-        refreshCookie.setPath("/api/auth/refresh");
-        refreshCookie.setHttpOnly(true);
-        response.addCookie(refreshCookie);
+        ResponseCookie clearRefresh = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true).secure(true).sameSite("None")
+                .path("/").maxAge(0).build();
+        response.addHeader(HttpHeaders.SET_COOKIE, clearRefresh.toString());
 
         return ResponseEntity.ok(new AuthResponse(true, "Logged out successfully"));
     }

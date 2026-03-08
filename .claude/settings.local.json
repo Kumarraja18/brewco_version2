@@ -16,7 +16,17 @@
       "Bash(./mvnw compile:*)",
       "Bash(ls mvnw*:*)",
       "Bash(mvn clean compile -q)",
-      "Bash(mvn spring-boot:run -q)"
+      "Bash(mvn spring-boot:run -q)",
+      "mcp__Railway__list-projects",
+      "Bash(vercel:*)",
+      "Bash(npm install:*)",
+      "Bash(railway:*)",
+      "mcp__Railway__create-project-and-link",
+      "mcp__Railway__deploy-template",
+      "mcp__Railway__list-services",
+      "mcp__Railway__list-variables",
+      "mcp__Railway__deploy",
+      "mcp__Railway__set-variables"
     ]
   }
 }

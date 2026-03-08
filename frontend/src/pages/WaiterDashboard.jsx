@@ -271,10 +271,10 @@ export default function WaiterDashboard() {
                         borderRadius:8, padding:'4px 10px', fontSize:'0.74rem', fontWeight:600, color:'#6f4e37' }}>
                         {order.orderType === 'DINE_IN' ? 'Dine-In' : 'Takeaway'}
                       </span>
-                      {order.cafeTable && (
+                      {order.table && (
                         <span style={{ background:'#faf5ef', border:'1px solid #e2d5c8',
                           borderRadius:8, padding:'4px 10px', fontSize:'0.74rem', fontWeight:600, color:'#a67c52' }}>
-                          Table {order.cafeTable.tableNumber}
+                          Table {order.table.tableNumber}
                         </span>
                       )}
                       {order.orderItems?.length > 0 && (

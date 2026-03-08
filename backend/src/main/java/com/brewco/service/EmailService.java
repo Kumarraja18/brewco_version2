@@ -15,6 +15,9 @@ public class EmailService {
     @Value("${spring.mail.username:}")
     private String fromEmail;
 
+    @Value("${frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     /**
      * Check if email is actually configured (username + password present).
      * Spring Boot creates JavaMailSender even with empty credentials,
@@ -68,7 +71,7 @@ public class EmailService {
                             "  Password: " + password + "\n" +
                             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
                             "Please change your password after your first login for security.\n\n" +
-                            "Login at: http://localhost:5173/login\n\n" +
+                            "Login at: " + frontendUrl + "/login\n\n" +
                             "Welcome to the Brew & Co family! ☕\n\n" +
                             "Best regards,\n" +
                             "Brew & Co Admin Team");
