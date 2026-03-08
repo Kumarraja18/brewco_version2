@@ -33,8 +33,13 @@ public class OrderService {
 
     @Transactional
     public Order placeOrder(Order order, List<OrderItem> items, User placedBy) {
+        return placeOrder(order, items, placedBy, "PLACED");
+    }
+
+    @Transactional
+    public Order placeOrder(Order order, List<OrderItem> items, User placedBy, String initialStatus) {
         order.setOrderRef(referenceGenerator.generateOrderReference());
-        order.setStatus("PLACED");
+        order.setStatus(initialStatus);
 
         BigDecimal total = BigDecimal.ZERO;
         for (OrderItem item : items) {
@@ -50,18 +55,19 @@ public class OrderService {
 
         for (OrderItem item : items) {
             item.setOrder(savedOrder);
-            item.setStatus("PLACED");
+            item.setStatus(initialStatus);
             orderItemRepository.save(item);
         }
 
-        logStatusChange(savedOrder, "PLACED", placedBy, "Order placed");
+        logStatusChange(savedOrder, initialStatus, placedBy, "Order placed");
 
-        // Send confirmation email
-        try {
-            emailService.sendOrderConfirmationEmail(placedBy.getEmail(), placedBy.getFirstName(), savedOrder.getOrderRef(), savedOrder.getGrandTotal());
-        } catch (Exception e) {
-            // Log but don't fail order placement if email fails
-            System.err.println("Email failed: " + e.getMessage());
+        // Send confirmation email (skip for PENDING_BOOKING — email sent when booking confirmed)
+        if (!"PENDING_BOOKING".equals(initialStatus)) {
+            try {
+                emailService.sendOrderConfirmationEmail(placedBy.getEmail(), placedBy.getFirstName(), savedOrder.getOrderRef(), savedOrder.getGrandTotal());
+            } catch (Exception e) {
+                System.err.println("Email failed: " + e.getMessage());
+            }
         }
 
         return savedOrder;

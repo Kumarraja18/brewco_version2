@@ -23,7 +23,7 @@ const SIDEBAR_ITEMS = [
 ];
 
 const STATUS_COLORS = {
-  PLACED: "#f59e0b", CONFIRMED: "#3b82f6", SENT_TO_KITCHEN: "#8b5cf6",
+  PENDING_BOOKING: "#9ca3af", PLACED: "#f59e0b", CONFIRMED: "#3b82f6", SENT_TO_KITCHEN: "#8b5cf6",
   PREPARING: "#f97316", READY: "#10b981", DELIVERED: "#6b7280", CANCELLED: "#ef4444"
 };
 
@@ -48,6 +48,7 @@ export default function CafeOwnerDashboard() {
   const [tableCapacityFilter, setTableCapacityFilter] = useState("ALL");
   const [tableTypeFilter, setTableTableTypeFilter] = useState("ALL");
   const [bookingStatusFilter, setBookingStatusFilter] = useState("ALL");
+  const [bookingDateFilter, setBookingDateFilter] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("ALL");
 
   const [renamingCatId, setRenamingCatId] = useState(null);
@@ -171,11 +172,11 @@ export default function CafeOwnerDashboard() {
         });
         toast.success("Table added!");
       } else if (modalType === "booking") {
-        const hour = parseInt(data.displayOrder || 12);
         await api.post(`/cafe-owner/cafes/${selectedCafe.id}/bookings`, {
           customerName: data.firstName + " " + data.lastName,
           customerEmail: data.email, customerPhone: data.phone,
-          bookingDate: data.dob, startTime: `${hour.toString().padStart(2, "0")}:00`,
+          bookingDate: data.dob, startTime: data.startTime || "12:00",
+          slotDuration: parseInt(data.slotDuration || 60),
           numberOfGuests: parseInt(data.capacity), status: "CONFIRMED"
         });
         toast.success("Booking confirmed!");
@@ -282,7 +283,7 @@ export default function CafeOwnerDashboard() {
     return (
       <div className="dashboard-page">
         <div className="empty-state">
-          <div className="empty-state__icon">🏪</div>
+          <div className="empty-state__icon">--</div>
           <div className="empty-state__text">No café registered yet</div>
           <button className="brew-btn brew-btn--primary" onClick={() => navigate("/cafe-setup")}>Set Up Your Café</button>
         </div>
@@ -290,11 +291,13 @@ export default function CafeOwnerDashboard() {
     );
   }
 
-  const pendingOrders = orders.filter((o) => o.status === "PLACED");
+  // Exclude PENDING_BOOKING orders — they only appear after booking is confirmed
+  const activeOrders = orders.filter(o => o.status !== "PENDING_BOOKING");
+  const pendingOrders = activeOrders.filter((o) => o.status === "PLACED");
   const chefs = staff.filter(s => s.role === "CHEF");
   const waiters = staff.filter(s => s.role === "WAITER");
 
-  const filteredOrders = orderStatusFilter === "ALL" ? orders : orders.filter(o => o.status === orderStatusFilter);
+  const filteredOrders = orderStatusFilter === "ALL" ? activeOrders : activeOrders.filter(o => o.status === orderStatusFilter);
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#f0ebe4", fontFamily: "'Inter', sans-serif" }}>
@@ -367,21 +370,18 @@ export default function CafeOwnerDashboard() {
           <div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px", marginBottom: "25px" }}>
               {[
-                { label: "Total Revenue", value: `₹${parseFloat(dashboard.totalRevenue || 0).toFixed(2)}`, icon: "💰", color: "#27ae60" },
-                { label: "Today's Revenue", value: `₹${parseFloat(dashboard.todayRevenue || 0).toFixed(2)}`, icon: "📈", color: "#e67e22" },
-                { label: "Today's Orders", value: dashboard.todayOrders ?? 0, icon: "☕", color: "#3b82f6" },
-                { label: "Available Tables", value: `${dashboard.availableTables ?? 0} / ${dashboard.totalTables ?? 0}`, icon: "🪑", color: "#2980b9" },
-                { label: "Pending Orders", value: dashboard.pendingOrders ?? 0, icon: "⏳", color: "#f59e0b" },
-                { label: "Orders In Progress", value: (dashboard.confirmedOrders ?? 0) + (dashboard.preparingOrders ?? 0), icon: "🍳", color: "#8e44ad" },
-                { label: "Ready to Deliver", value: dashboard.readyOrders ?? 0, icon: "✅", color: "#10b981" },
-                { label: "Total Staff", value: (dashboard.totalChefs ?? 0) + (dashboard.totalWaiters ?? 0), icon: "👥", color: "#6b7280" },
+                { label: "Total Revenue", value: `₹${parseFloat(dashboard.totalRevenue || 0).toFixed(2)}`, color: "#27ae60" },
+                { label: "Today's Revenue", value: `₹${parseFloat(dashboard.todayRevenue || 0).toFixed(2)}`, color: "#e67e22" },
+                { label: "Today's Orders", value: dashboard.todayOrders ?? 0, color: "#3b82f6" },
+                { label: "Available Tables", value: `${dashboard.availableTables ?? 0} / ${dashboard.totalTables ?? 0}`, color: "#2980b9" },
+                { label: "Pending Orders", value: dashboard.pendingOrders ?? 0, color: "#f59e0b" },
+                { label: "Orders In Progress", value: (dashboard.confirmedOrders ?? 0) + (dashboard.preparingOrders ?? 0), color: "#8e44ad" },
+                { label: "Ready to Deliver", value: dashboard.readyOrders ?? 0, color: "#10b981" },
+                { label: "Total Staff", value: (dashboard.totalChefs ?? 0) + (dashboard.totalWaiters ?? 0), color: "#6b7280" },
               ].map((card, i) => (
-                <div key={i} className="card-premium" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "16px" }}>
-                  <div style={{ fontSize: "1.8rem", background: `${card.color}15`, width: "56px", height: "56px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{card.icon}</div>
-                  <div>
-                    <div style={{ fontSize: "0.68rem", color: "#8b6f63", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px" }}>{card.label}</div>
-                    <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#2e241f" }}>{card.value}</div>
-                  </div>
+                <div key={i} className="card-premium" style={{ padding: "24px", borderLeft: `4px solid ${card.color}` }}>
+                  <div style={{ fontSize: "0.68rem", color: "#8b6f63", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "8px" }}>{card.label}</div>
+                  <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#2e241f" }}>{card.value}</div>
                 </div>
               ))}
             </div>
@@ -389,7 +389,7 @@ export default function CafeOwnerDashboard() {
             {/* Quick order summary */}
             {pendingOrders.length > 0 && (
               <div className="card-premium" style={{ padding: "20px" }}>
-                <div className="category-header-premium" style={{ marginBottom: "15px" }}>⚠️ {pendingOrders.length} Pending Order{pendingOrders.length > 1 ? "s" : ""} Need Confirmation</div>
+                <div className="category-header-premium" style={{ marginBottom: "15px" }}>{pendingOrders.length} Pending Order{pendingOrders.length > 1 ? "s" : ""} Need Confirmation</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   {pendingOrders.slice(0, 3).map(order => (
                     <div key={order.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#fffbf0", borderRadius: "10px", border: "1px solid #fde68a" }}>
@@ -450,8 +450,8 @@ export default function CafeOwnerDashboard() {
                       </div>
                     )}
                     <div style={{ marginTop: "6px", fontSize: "0.78rem", color: "#9ca3af" }}>
-                      {order.assignedChef && <span>👨‍🍳 {order.assignedChef.firstName} {order.assignedChef.lastName}</span>}
-                      {order.assignedWaiter && <span style={{ marginLeft: "10px" }}>🛎 {order.assignedWaiter.firstName} {order.assignedWaiter.lastName}</span>}
+                      {order.assignedChef && <span>Chef: {order.assignedChef.firstName} {order.assignedChef.lastName}</span>}
+                      {order.assignedWaiter && <span style={{ marginLeft: "10px" }}>Waiter: {order.assignedWaiter.firstName} {order.assignedWaiter.lastName}</span>}
                     </div>
                   </div>
 
@@ -465,7 +465,7 @@ export default function CafeOwnerDashboard() {
                     {["PLACED", "CONFIRMED"].includes(order.status) && (
                       <button className="brew-btn" style={{ padding: "7px 14px", fontSize: "0.75rem", background: "#f0ebe4", border: "1px solid #d4c0a8", color: "#6f4e37", whiteSpace: "nowrap" }}
                         onClick={() => { setAssignOrderId(order.id); setAssignChefId(order.assignedChef?.id?.toString() || ""); setAssignWaiterId(order.assignedWaiter?.id?.toString() || ""); }}>
-                        👤 Assign Staff
+                        Assign Staff
                       </button>
                     )}
                   </div>
@@ -510,7 +510,7 @@ export default function CafeOwnerDashboard() {
         {activeTab === "menu" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center", marginBottom: "8px" }}>
-              <button onClick={() => setMenuFilter("ALL")} className={`admin-filter-pill ${menuFilter === "ALL" ? "active" : ""}`}>☕ All Items</button>
+              <button onClick={() => setMenuFilter("ALL")} className={`admin-filter-pill ${menuFilter === "ALL" ? "active" : ""}`}>All Items</button>
               {categories.map(cat => (
                 <div key={cat.id} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                   {renamingCatId === cat.id ? (
@@ -523,8 +523,8 @@ export default function CafeOwnerDashboard() {
                     </div>
                   ) : (
                     <>
-                      <button onClick={() => setMenuFilter(cat.id)} className={`admin-filter-pill ${menuFilter === cat.id ? "active" : ""}`}>☕ {cat.name}</button>
-                      <button title="Rename" onClick={() => { setRenamingCatId(cat.id); setRenameCatName(cat.name); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.85rem", opacity: 0.55, padding: "2px 4px" }}>✏️</button>
+                      <button onClick={() => setMenuFilter(cat.id)} className={`admin-filter-pill ${menuFilter === cat.id ? "active" : ""}`}>{cat.name}</button>
+                      <button title="Rename" onClick={() => { setRenamingCatId(cat.id); setRenameCatName(cat.name); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.85rem", opacity: 0.55, padding: "2px 4px" }}>Edit</button>
                     </>
                   )}
                 </div>
@@ -577,7 +577,12 @@ export default function CafeOwnerDashboard() {
         )}
 
         {/* ── TABLES ── */}
-        {activeTab === "tables" && (
+        {activeTab === "tables" && (() => {
+          // Find bookings for each table
+          const getTableBookings = (tableId) => {
+            return bookings.filter(b => b.table?.id === tableId && ["PENDING", "CONFIRMED"].includes(b.status));
+          };
+          return (
           <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
             <div style={{ display: "flex", gap: "20px", marginBottom: "5px", flexWrap: "wrap" }}>
               <div className="admin-filter-group">
@@ -601,18 +606,21 @@ export default function CafeOwnerDashboard() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "20px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "20px" }}>
               {tables
                 .filter(t => tableCapacityFilter === "ALL" || (tableCapacityFilter === "8" ? t.capacity >= 8 : t.capacity === parseInt(tableCapacityFilter)))
                 .filter(t => tableTypeFilter === "ALL" || t.tableType === tableTypeFilter)
-                .map(table => (
+                .map(table => {
+                  const tableBookings = getTableBookings(table.id);
+                  return (
                   <div key={table.id} className="card-premium" style={{ padding: 0, textAlign: "center", overflow: "hidden" }}>
                     {/* Table Image */}
-                    <div style={{ height: "130px", overflow: "hidden", position: "relative" }}>
+                    <div style={{ height: "130px", overflow: "hidden", position: "relative", background: "#f5ede6" }}>
                       <img
-                        src={table.imageUrl || "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=250&fit=crop"}
+                        src={table.imageUrl || `https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=250&fit=crop&q=80&t=${table.id}`}
                         alt={`Table ${table.tableNumber}`}
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={e => { e.target.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=250&fit=crop'; }}
                       />
                       <div style={{ position: "absolute", top: "8px", left: "8px", background: "rgba(0,0,0,0.55)",
                         color: "#fff", fontSize: "0.65rem", fontWeight: 700, padding: "2px 7px", borderRadius: "5px",
@@ -627,7 +635,19 @@ export default function CafeOwnerDashboard() {
                     {/* Table Info */}
                     <div style={{ padding: "14px 16px" }}>
                       <div style={{ fontWeight: 800, fontSize: "1.05rem", color: "#111827" }}>Table {table.tableNumber}</div>
-                      <div style={{ fontSize: "0.78rem", color: "#6b7280", margin: "4px 0 12px" }}>{table.capacity} Guests • {table.tableType}</div>
+                      <div style={{ fontSize: "0.78rem", color: "#6b7280", margin: "4px 0 8px" }}>{table.capacity} Guests • {table.tableType}</div>
+                      {/* Upcoming bookings for this table */}
+                      {tableBookings.length > 0 && (
+                        <div style={{ marginBottom: "10px", textAlign: "left" }}>
+                          {tableBookings.slice(0, 2).map(b => (
+                            <div key={b.id} style={{ fontSize: "0.68rem", color: "#6f4e37", background: "#faf5ef", borderRadius: "6px", padding: "4px 8px", marginBottom: "4px", border: "1px solid #ece5dc" }}>
+                              {b.bookingDate} {b.startTime}{b.endTime ? `–${b.endTime}` : ''} • {b.numberOfGuests}g
+                              <span style={{ marginLeft: "4px", fontWeight: 700, color: b.status === "CONFIRMED" ? "#27ae60" : "#e67e22" }}>{b.status}</span>
+                            </div>
+                          ))}
+                          {tableBookings.length > 2 && <div style={{ fontSize: "0.65rem", color: "#8b6f63", textAlign: "center" }}>+{tableBookings.length - 2} more</div>}
+                        </div>
+                      )}
                       <button onClick={() => toggleTableStatus(table)}
                         style={{ padding: "6px 14px", borderRadius: "20px", border: "none", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700,
                           background: table.status === "AVAILABLE" ? "#dcfce7" : "#fee2e2",
@@ -636,10 +656,12 @@ export default function CafeOwnerDashboard() {
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ── STAFF (Chefs / Waiters) ── */}
         {["chefs", "waiters"].includes(activeTab) && (
@@ -665,7 +687,11 @@ export default function CafeOwnerDashboard() {
         )}
 
         {/* ── BOOKINGS ── */}
-        {activeTab === "bookings" && (
+        {activeTab === "bookings" && (() => {
+          const filteredBookings = bookings
+            .filter(b => bookingStatusFilter === "ALL" || b.status === bookingStatusFilter)
+            .filter(b => !bookingDateFilter || b.bookingDate === bookingDateFilter);
+          return (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
               <div className="admin-filter-group">
@@ -678,29 +704,38 @@ export default function CafeOwnerDashboard() {
                   <option value="COMPLETED">Completed</option>
                 </select>
               </div>
+              <div className="admin-filter-group">
+                <label className="admin-filter-label">Date</label>
+                <input type="date" value={bookingDateFilter} onChange={e => setBookingDateFilter(e.target.value)}
+                  style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid #d4c0a8", fontSize: "0.82rem", color: "#2e241f" }} />
+              </div>
+              {bookingDateFilter && (
+                <button onClick={() => setBookingDateFilter("")} style={{ background: "none", border: "1px solid #d4c0a8", borderRadius: "8px", padding: "6px 12px", fontSize: "0.75rem", cursor: "pointer", color: "#c0392b" }}>Clear Date</button>
+              )}
               <button onClick={() => refreshLive(selectedCafe.id)} style={{ marginLeft: "auto", background: "none", border: "1px solid #d4c0a8", borderRadius: "8px", padding: "8px 14px", fontSize: "0.78rem", cursor: "pointer", color: "#6f4e37" }}>↻ Refresh</button>
             </div>
 
             <div style={{ display: "grid", gap: "12px" }}>
-              {bookings.filter(b => bookingStatusFilter === "ALL" || b.status === bookingStatusFilter).map(b => (
+              {filteredBookings.map(b => (
                 <div key={b.id} className="card-premium" style={{ padding: "18px 22px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "15px", flexWrap: "wrap" }}>
                   <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
                     <div style={{ padding: "10px", background: "#faf8f5", borderRadius: "10px", textAlign: "center", minWidth: "72px", border: "1px solid #ece5dc" }}>
-                      <div style={{ fontSize: "0.6rem", fontWeight: 800, color: "#8b6f63", textTransform: "uppercase" }}>{new Date(b.bookingDate).toLocaleDateString("en-US", { month: "short" })}</div>
-                      <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "#2e241f" }}>{new Date(b.bookingDate).getDate()}</div>
+                      <div style={{ fontSize: "0.6rem", fontWeight: 800, color: "#8b6f63", textTransform: "uppercase" }}>{new Date(b.bookingDate + 'T00:00').toLocaleDateString("en-US", { month: "short" })}</div>
+                      <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "#2e241f" }}>{new Date(b.bookingDate + 'T00:00').getDate()}</div>
                     </div>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#2e241f" }}>
                         {b.customer?.firstName ? `${b.customer.firstName} ${b.customer.lastName}` : b.customerName || "Walk-in Guest"}
                       </div>
                       <div style={{ fontSize: "0.78rem", color: "#8b6f63", marginTop: "3px" }}>
-                        {b.startTime} • {b.numberOfGuests} guests • #{b.bookingRef}
+                        {b.startTime}{b.endTime ? ` – ${b.endTime}` : ''}{b.slotDuration ? ` (${b.slotDuration === 120 ? '2 hrs' : '1 hr'})` : ''} • {b.numberOfGuests} guests • #{b.bookingRef}
                       </div>
+                      {b.table && <div style={{ fontSize: "0.72rem", color: "#6f4e37", marginTop: "2px" }}>Table {b.table.tableNumber} ({b.table.tableType})</div>}
                       {b.specialRequests && <div style={{ fontSize: "0.72rem", color: "#9ca3af", marginTop: "2px" }}>{b.specialRequests}</div>}
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <span style={{ padding: "5px 12px", borderRadius: "20px", fontSize: "0.72rem", fontWeight: 700, background: b.status === "CONFIRMED" ? "#eaf7ed" : b.status === "PENDING" ? "#fef3e2" : "#fdf2f2", color: b.status === "CONFIRMED" ? "#27ae60" : b.status === "PENDING" ? "#e67e22" : "#c0392b", textTransform: "uppercase" }}>
+                    <span style={{ padding: "5px 12px", borderRadius: "20px", fontSize: "0.72rem", fontWeight: 700, background: b.status === "CONFIRMED" ? "#eaf7ed" : b.status === "PENDING" ? "#fef3e2" : b.status === "COMPLETED" ? "#e8f4fd" : "#fdf2f2", color: b.status === "CONFIRMED" ? "#27ae60" : b.status === "PENDING" ? "#e67e22" : b.status === "COMPLETED" ? "#2980b9" : "#c0392b", textTransform: "uppercase" }}>
                       {b.status}
                     </span>
                     {b.status === "PENDING" && (
@@ -715,12 +750,13 @@ export default function CafeOwnerDashboard() {
                   </div>
                 </div>
               ))}
-              {bookings.filter(b => bookingStatusFilter === "ALL" || b.status === bookingStatusFilter).length === 0 && (
-                <div style={{ padding: "60px", textAlign: "center", background: "#fff", borderRadius: "16px", color: "#8b6f63", border: "1px dashed #d4c0a8" }}>No bookings found.</div>
+              {filteredBookings.length === 0 && (
+                <div style={{ padding: "60px", textAlign: "center", background: "#fff", borderRadius: "16px", color: "#8b6f63", border: "1px dashed #d4c0a8" }}>No bookings found{bookingDateFilter ? ` for ${bookingDateFilter}` : ''}.</div>
               )}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ── PROFILE ── */}
         {activeTab === "profile" && (

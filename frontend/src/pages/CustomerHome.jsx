@@ -57,7 +57,7 @@ export default function CustomerHome() {
             {/* Header */}
             <div style={{ marginTop: '20px', marginBottom: '30px' }}>
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#2e241f' }}>
-                    Hey {user?.firstName || 'Coffee Lover'}! ☕
+                    Hey, {user?.firstName || 'Coffee Lover'}!
                 </h1>
                 <p style={{ color: '#8b6f63', fontWeight: 500 }}>Find your perfect brew for today</p>
             </div>
@@ -99,7 +99,7 @@ export default function CustomerHome() {
                                 />
                                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', padding: '15px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                                     <h3 style={{ color: '#fff', margin: 0, fontSize: '1rem' }}>{cafe.name}</h3>
-                                    <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.75rem', margin: '4px 0 0 0' }}>{cafe.city} • {cafe.avgRating || '4.5'} ⭐</p>
+                                    <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.75rem', margin: '4px 0 0 0' }}>{cafe.city} • {cafe.avgRating || '4.5'}</p>
                                 </div>
                             </div>
                         ))}
@@ -145,7 +145,7 @@ export default function CustomerHome() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#2e241f' }}>{cafe.name}</h3>
                                     <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#10b981' }}>
-                                        {cafe.avgRating || '4.5'} ⭐
+                                        {cafe.avgRating || '4.5'}
                                     </div>
                                 </div>
                                 <p style={{ margin: '5px 0', fontSize: '0.8rem', color: '#8b6f63' }}>{cafe.city} • {cafe.address}</p>

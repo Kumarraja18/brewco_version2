@@ -2,6 +2,7 @@ package com.brewco.controller;
 
 import com.brewco.service.AdminService;
 import com.brewco.entity.Cafe;
+import com.brewco.dto.CafeAdminResponse;
 import com.brewco.repository.CafeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -112,7 +113,10 @@ public class AdminController {
 
     @GetMapping("/cafes/all")
     public ResponseEntity<?> getAllCafes() {
-        List<Cafe> allCafes = cafeRepository.findAll();
+        List<CafeAdminResponse> allCafes = cafeRepository.findAllWithOwner()
+                .stream()
+                .map(CafeAdminResponse::from)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(allCafes);
     }
 

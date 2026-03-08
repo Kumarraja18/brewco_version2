@@ -16,6 +16,7 @@ import {
 } from '../api'
 import '../styles/admin-dashboard.css'
 import { AuthContext } from '../context/AuthContext'
+import { FaChartBar, FaUsers, FaStore, FaUserPlus, FaEnvelope, FaCoffee, FaChair } from 'react-icons/fa'
 
 // ── Helpers ──
 const formatDate = (iso) => {
@@ -193,7 +194,7 @@ export default function AdminDashboard({ user }) {
   if (!user || user.role?.toUpperCase() !== 'ADMIN') {
     return (
       <div style={{ padding: '4rem', textAlign: 'center' }}>
-        <h2>⛔ Access Denied</h2>
+        <h2>Access Denied</h2>
         <p>You must be logged in as admin to view this page.</p>
       </div>
     )
@@ -205,7 +206,7 @@ export default function AdminDashboard({ user }) {
       <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
           <div className="admin-sidebar-logo">
-            <div className="logo-icon">☕</div>
+            <div className="logo-icon"><FaCoffee /></div>
             <span>Brew & Co</span>
           </div>
 
@@ -228,13 +229,13 @@ export default function AdminDashboard({ user }) {
             className={`admin-sidebar-nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveNav('dashboard')}
           >
-            <span className="nav-icon">📊</span> Dashboard
+            <span className="nav-icon"><FaChartBar /></span> Dashboard
           </button>
           <button
             className={`admin-sidebar-nav-item ${activeNav === 'users' ? 'active' : ''}`}
             onClick={() => setActiveNav('users')}
           >
-            <span className="nav-icon">👥</span> Users
+            <span className="nav-icon"><FaUsers /></span> Users
             {stats?.pendingUsers > 0 && (
               <span className="nav-badge">{stats.pendingUsers}</span>
             )}
@@ -243,7 +244,7 @@ export default function AdminDashboard({ user }) {
             className={`admin-sidebar-nav-item ${activeNav === 'cafes' ? 'active' : ''}`}
             onClick={() => setActiveNav('cafes')}
           >
-            <span className="nav-icon">🏪</span> Cafes
+            <span className="nav-icon"><FaStore /></span> Cafes
             {allCafes.filter(c => !c.isVerified && c.isActive).length > 0 && (
               <span className="nav-badge">{allCafes.filter(c => !c.isVerified && c.isActive).length}</span>
             )}
@@ -330,7 +331,7 @@ export default function AdminDashboard({ user }) {
         <div className="admin-modal-overlay" onClick={() => { setModal(null); setModalData(null) }}>
           <div className="admin-modal" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3>{modal.type === 'view' ? '👤 User Details' : modal.type === 'approve' ? '✅ Approve User' : '❌ Reject User'}</h3>
+              <h3>{modal.type === 'view' ? 'User Details' : modal.type === 'approve' ? 'Approve User' : 'Reject User'}</h3>
               <button className="admin-modal-close" onClick={() => { setModal(null); setModalData(null) }}>✕</button>
             </div>
 
@@ -341,7 +342,7 @@ export default function AdminDashboard({ user }) {
                 <>
                   {/* Personal Details */}
                   <div className="admin-modal-section">
-                    <h4>👤 Personal Information</h4>
+                    <h4>Personal Information</h4>
                     <div className="admin-modal-detail-grid">
                       <DetailItem label="Full Name" value={`${modalData.firstName} ${modalData.lastName}`} />
                       <DetailItem label="Email" value={modalData.email} />
@@ -357,7 +358,7 @@ export default function AdminDashboard({ user }) {
                   {/* Addresses */}
                   {modalData.addresses && modalData.addresses.length > 0 && (
                     <div className="admin-modal-section">
-                      <h4>📍 Addresses</h4>
+                      <h4>Addresses</h4>
                       {modalData.addresses.map((addr, i) => (
                         <div key={i} className="admin-modal-detail-grid" style={{ marginBottom: '.5rem' }}>
                           <DetailItem label="Street" value={addr.street} />
@@ -372,7 +373,7 @@ export default function AdminDashboard({ user }) {
                   {/* Work Experience */}
                   {modalData.workExperiences && modalData.workExperiences.length > 0 && (
                     <div className="admin-modal-section">
-                      <h4>💼 Work Experience</h4>
+                      <h4>Work Experience</h4>
                       {modalData.workExperiences.map((w, i) => (
                         <div key={i} className="admin-modal-detail-grid" style={{ marginBottom: '.5rem' }}>
                           <DetailItem label="Company" value={w.companyName} />
@@ -386,7 +387,7 @@ export default function AdminDashboard({ user }) {
                   {/* Government Proofs */}
                   {modalData.governmentProofs && modalData.governmentProofs.length > 0 && (
                     <div className="admin-modal-section">
-                      <h4>🪪 Government Proofs</h4>
+                      <h4>Government Proofs</h4>
                       {modalData.governmentProofs.map((g, i) => (
                         <div key={i} className="admin-modal-detail-grid" style={{ marginBottom: '.5rem' }}>
                           <DetailItem label="Type" value={g.proofType} />
@@ -419,7 +420,7 @@ export default function AdminDashboard({ user }) {
       {/* ── TOAST ── */}
       {toast && (
         <div className={`admin-toast ${toast.type}`}>
-          <span className="toast-icon">{toast.type === 'success' ? '✅' : '❌'}</span>
+          <span className="toast-icon">{toast.type === 'success' ? 'OK' : 'ERR'}</span>
           <div className="toast-content">
             <h4>{toast.title}</h4>
             <p>{toast.message}</p>
@@ -460,7 +461,7 @@ function DashboardView({ stats, pendingUsers, now, bars, allUsers, onView, onApp
           <div className="stat-label">Total Users</div>
           <div className="stat-sublabel">{formatDate(new Date().toISOString())}</div>
           <div className="stat-value">{stats?.totalUsers || 0}</div>
-          <div className="stat-icon">👥</div>
+          <div className="stat-icon"><FaUsers /></div>
           <div className="stat-dots">
             <span className="active"></span>
             <span className="active"></span>
@@ -474,14 +475,14 @@ function DashboardView({ stats, pendingUsers, now, bars, allUsers, onView, onApp
           <div className="stat-value" style={{ color: stats?.pendingUsers > 0 ? '#e67e22' : '#2e241f' }}>
             {stats?.pendingUsers || 0}
           </div>
-          <div className="stat-icon">📨</div>
+          <div className="stat-icon"><FaEnvelope /></div>
         </div>
 
         <div className="admin-stat-card">
           <div className="stat-label">Registered Users</div>
           <div className="stat-sublabel">On your platform</div>
           <div className="stat-value">{stats?.activeUsers || 0}</div>
-          <div className="stat-icon">👤</div>
+          <div className="stat-icon"><FaUserPlus /></div>
         </div>
 
         <div className="admin-stat-card">
@@ -490,14 +491,14 @@ function DashboardView({ stats, pendingUsers, now, bars, allUsers, onView, onApp
           <div className="stat-value" style={{ color: stats?.activeOrders > 0 ? '#27ae60' : '#2e241f' }}>
             {stats?.activeOrders || 0}
           </div>
-          <div className="stat-icon">☕</div>
+          <div className="stat-icon"><FaCoffee /></div>
         </div>
 
         <div className="admin-stat-card">
           <div className="stat-label">Occupied Tables</div>
           <div className="stat-sublabel">{stats?.occupiedTables || 0} of {stats?.totalTables || 0} tables</div>
           <div className="stat-value">{stats?.occupiedTables || 0}</div>
-          <div className="stat-icon">🪑</div>
+          <div className="stat-icon"><FaChair /></div>
         </div>
 
         <div className="admin-stat-card clock">
@@ -720,7 +721,7 @@ function UsersView({ allUsers, onView, onActivate, onDeactivate }) {
 
       {filtered.length === 0 ? (
         <div className="admin-no-data">
-          <div className="no-data-icon">📭</div>
+          <div className="no-data-icon">--</div>
           <p>No users found for this filter.</p>
         </div>
       ) : (
@@ -839,7 +840,7 @@ function CafesView({ allCafes, onVerify, onReject, onDelete }) {
 
       {filtered.length === 0 ? (
         <div className="admin-no-data">
-          <div className="no-data-icon">🏪</div>
+          <div className="no-data-icon">--</div>
           <p>No cafes found for this filter.</p>
         </div>
       ) : (
@@ -868,14 +869,14 @@ function CafesView({ allCafes, onVerify, onReject, onDelete }) {
                       </div>
                       <div className="cell-info">
                         <h5>{cafe.name}</h5>
-                        <p style={{ fontSize: '0.72rem', color: '#9ca3af' }}>ID #{cafe.id}</p>
+                        <p style={{ fontSize: '0.72rem', color: '#9ca3af' }}>{cafe.owner?.firstName} {cafe.owner?.lastName}</p>
                       </div>
                     </div>
                   </td>
                   <td>
                     <div className="cell-info">
                       <h5>{cafe.owner?.firstName} {cafe.owner?.lastName}</h5>
-                      <p>{cafe.contactNumber}</p>
+                      <p>{cafe.owner?.email}</p>
                     </div>
                   </td>
                   <td>

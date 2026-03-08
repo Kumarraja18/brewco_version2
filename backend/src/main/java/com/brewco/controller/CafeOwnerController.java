@@ -621,6 +621,14 @@ public class CafeOwnerController {
             booking.setNumberOfGuests(Integer.parseInt(payload.get("numberOfGuests").toString()));
             booking.setStatus(payload.get("status") != null ? (String) payload.get("status") : "PENDING");
 
+            // Slot duration (default 60 minutes)
+            int slotDuration = payload.get("slotDuration") != null
+                    ? Integer.parseInt(payload.get("slotDuration").toString()) : 60;
+            booking.setSlotDuration(slotDuration);
+            if (booking.getStartTime() != null) {
+                booking.setEndTime(booking.getStartTime().plusMinutes(slotDuration));
+            }
+
             // Generate a unique reference
             booking.setBookingRef("BKG-" + System.currentTimeMillis() % 1000000);
 
@@ -630,18 +638,64 @@ public class CafeOwnerController {
         }
     }
 
+    @Autowired
+    private com.brewco.repository.OrderRepository orderRepository;
+
     @PutMapping("/cafes/{cafeId}/bookings/{bookingId}/status")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> updateBookingStatus(@PathVariable("cafeId") Long cafeId,
             @PathVariable("bookingId") Long bookingId,
             @RequestBody Map<String, String> payload, Authentication auth) {
         try {
             getOwnedCafe(cafeId, auth);
+            User owner = getOwner(auth);
             Booking booking = bookingService.getBookingById(bookingId)
                     .orElseThrow(() -> new Exception("Booking not found"));
             String newStatus = payload.get("status");
             if (newStatus == null)
                 throw new Exception("Status is required");
+
             Booking updated = bookingService.updateBookingStatus(booking, newStatus);
+
+            // When booking is CONFIRMED: mark table as OCCUPIED and activate linked order
+            if ("CONFIRMED".equals(newStatus)) {
+                // Mark table occupied
+                if (booking.getTable() != null) {
+                    CafeTable table = booking.getTable();
+                    table.setStatus("OCCUPIED");
+                    tableService.updateTable(table);
+                }
+                // Activate any linked order (PENDING_BOOKING → PLACED)
+                orderRepository.findByBooking(booking).ifPresent(order -> {
+                    if ("PENDING_BOOKING".equals(order.getStatus())) {
+                        orderService.updateOrderStatus(order, "PLACED", owner, "Booking confirmed — order activated");
+                    }
+                });
+            }
+
+            // When booking is COMPLETED: mark table as AVAILABLE
+            if ("COMPLETED".equals(newStatus)) {
+                if (booking.getTable() != null) {
+                    CafeTable table = booking.getTable();
+                    table.setStatus("AVAILABLE");
+                    tableService.updateTable(table);
+                }
+            }
+
+            // When booking is CANCELLED: mark table as AVAILABLE and cancel linked order
+            if ("CANCELLED".equals(newStatus)) {
+                if (booking.getTable() != null) {
+                    CafeTable table = booking.getTable();
+                    table.setStatus("AVAILABLE");
+                    tableService.updateTable(table);
+                }
+                orderRepository.findByBooking(booking).ifPresent(order -> {
+                    if ("PENDING_BOOKING".equals(order.getStatus())) {
+                        orderService.updateOrderStatus(order, "CANCELLED", owner, "Booking cancelled — order cancelled");
+                    }
+                });
+            }
+
             return ResponseEntity.ok(updated);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

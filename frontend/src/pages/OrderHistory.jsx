@@ -46,9 +46,9 @@ export default function OrderHistory() {
                 <div style={{marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '15px'}}>
                     {filtered.length === 0 ? (
                         <div style={{textAlign: 'center', padding: '60px 0'}}>
-                            <div style={{fontSize: '3rem', marginBottom: '20px', opacity: 0.2}}>☕</div>
-                            <h3 style={{color: '#686b78'}}>No {activeTab.toLowerCase()} orders yet</h3>
-                            <button className="brew-btn brew-btn--primary" style={{marginTop: '20px', border: 'none', background: '#ff5200', color: '#fff', padding: '10px 25px', borderRadius: '10px'}} onClick={() => navigate('/customer-dashboard')}>Browse Cafes</button>
+                            <FaUtensils size={48} style={{marginBottom: '20px', opacity: 0.15, color: '#6f4e37'}} />
+                            <h3 style={{color: '#8b6f63'}}>No {activeTab === 'DINE_IN' ? 'dine-in' : 'takeaway'} orders yet</h3>
+                            <button style={{marginTop: '20px', border: 'none', background: '#6f4e37', color: '#fff', padding: '10px 25px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700}} onClick={() => navigate('/customer-dashboard')}>Browse Cafes</button>
                         </div>
                     ) : (
                         filtered.map(order => (
@@ -60,7 +60,7 @@ export default function OrderHistory() {
                                     </div>
                                     <div style={{textAlign: 'right'}}>
                                         <div style={{fontWeight: 800, fontSize: '1rem'}}>₹{order.grandTotal}</div>
-                                        <div style={{fontSize: '0.75rem', fontWeight: 700, color: order.status === 'DELIVERED' ? '#10b981' : '#ff5200', marginTop: '4px'}}>{order.status}</div>
+                                        <div style={{fontSize: '0.75rem', fontWeight: 700, color: order.status === 'DELIVERED' ? '#10b981' : '#a67c52', marginTop: '4px'}}>{order.status}</div>
                                     </div>
                                 </div>
                                 
@@ -68,7 +68,7 @@ export default function OrderHistory() {
                                     <div style={{fontSize: '0.85rem', color: '#686b78', display: 'flex', alignItems: 'center', gap: '6px'}}>
                                         <FaClock size={12} /> {new Date(order.createdAt).toLocaleDateString()}
                                     </div>
-                                    <button style={{background: 'none', border: 'none', color: '#ff5200', fontWeight: 700, fontSize: '0.85rem'}}>Track Order →</button>
+                                    <button style={{background: 'none', border: 'none', color: '#6f4e37', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'}}>Track Order →</button>
                                 </div>
                             </div>
                         ))

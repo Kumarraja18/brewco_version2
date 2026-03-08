@@ -42,7 +42,7 @@ export default function BottomNav() {
         <FaSearch size={20} />
         <span style={{ marginTop: '4px' }}>Explore</span>
       </NavLink>
-      <NavLink to="/order-history" style={({ isActive }) => ({
+      <NavLink to="/my-orders" style={({ isActive }) => ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

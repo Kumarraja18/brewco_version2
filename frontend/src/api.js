@@ -1,92 +1,10 @@
 import api from './api/axiosClient';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+// ========== Auth API ==========
 
 export const registerUser = async (userData) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Registration failed')
-    }
-
-    return data
-  } catch (error) {
-    throw error
-  }
-}
-
-export const loginUser = async (credentials) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Login failed')
-    }
-
-    return data
-  } catch (error) {
-    throw error
-  }
-}
-
-export const getUserById = async (userId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/user/${userId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to fetch user')
-    }
-
-    return data
-  } catch (error) {
-    throw error
-  }
-}
-
-export const updateUserProfile = async (userId, userData) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/user/${userId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to update profile')
-    }
-
-    return data
-  } catch (error) {
-    throw error
-  }
+  const response = await api.post('/auth/register', userData)
+  return response.data
 }
 
 // ========== Admin API ==========
@@ -156,55 +74,24 @@ export const deleteCafe = async (cafeId) => {
   return response.data
 }
 
-// Registration Steps API
+// ========== Registration Steps API ==========
+
 export const savePersonalDetails = async (details) => {
-  const response = await fetch(`${API_BASE_URL}/register/step1/personal-details`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(details),
-  })
-  if (!response.ok) {
-    const err = await response.json()
-    throw new Error(err.error || 'Failed to save personal details')
-  }
-  return response.json()
+  const response = await api.post('/register/step1/personal-details', details)
+  return response.data
 }
 
 export const saveAddress = async (userId, address) => {
-  const response = await fetch(`${API_BASE_URL}/register/step2/address/${userId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(address),
-  })
-  if (!response.ok) {
-    const err = await response.json()
-    throw new Error(err.error || 'Failed to save address')
-  }
-  return response.json()
+  const response = await api.post(`/register/step2/address/${userId}`, address)
+  return response.data
 }
 
 export const saveWorkExperience = async (userId, workExp) => {
-  const response = await fetch(`${API_BASE_URL}/register/step3/work-experience/${userId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(workExp),
-  })
-  if (!response.ok) {
-    const err = await response.json()
-    throw new Error(err.error || 'Failed to save work experience')
-  }
-  return response.json()
+  const response = await api.post(`/register/step3/work-experience/${userId}`, workExp)
+  return response.data
 }
 
 export const saveGovernmentProof = async (userId, govProof) => {
-  const response = await fetch(`${API_BASE_URL}/register/step4/govt-proof/${userId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(govProof),
-  })
-  if (!response.ok) {
-    const err = await response.json()
-    throw new Error(err.error || 'Failed to save government proof')
-  }
-  return response.json()
+  const response = await api.post(`/register/step4/govt-proof/${userId}`, govProof)
+  return response.data
 }

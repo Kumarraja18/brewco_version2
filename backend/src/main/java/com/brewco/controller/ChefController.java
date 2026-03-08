@@ -55,6 +55,17 @@ public class ChefController {
         }
     }
 
+    @GetMapping("/orders/history")
+    public ResponseEntity<?> getOrderHistory(Authentication authentication) {
+        try {
+            Cafe cafe = getAssignedCafe(authentication);
+            List<Order> delivered = orderService.getCafeOrdersByStatus(cafe, "DELIVERED");
+            return ResponseEntity.ok(delivered);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/orders/{orderId}/start")
     @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> startPreparing(@PathVariable("orderId") Long orderId, Authentication authentication) {

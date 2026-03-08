@@ -72,6 +72,12 @@ public class CustomerController {
             booking.setStartTime(java.time.LocalTime.parse(payload.get("startTime").toString()));
             booking.setNumberOfGuests(Integer.parseInt(payload.get("numberOfGuests").toString()));
 
+            // Slot duration (default 60 minutes)
+            int slotDuration = payload.get("slotDuration") != null
+                    ? Integer.parseInt(payload.get("slotDuration").toString()) : 60;
+            booking.setSlotDuration(slotDuration);
+            booking.setEndTime(booking.getStartTime().plusMinutes(slotDuration));
+
             if (payload.get("specialRequests") != null) {
                 booking.setSpecialRequests(payload.get("specialRequests").toString());
             }
@@ -84,7 +90,7 @@ public class CustomerController {
             }
 
             Booking saved = bookingService.makeBooking(booking);
-            return ResponseEntity.ok(saved);
+            return ResponseEntity.ok(Map.of("booking", saved, "bookingId", saved.getId()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -115,6 +121,7 @@ public class CustomerController {
     }
 
     @PostMapping("/orders")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> placeOrder(@RequestBody Map<String, Object> payload, Authentication authentication) {
         try {
             User customer = userRepository.findByEmail(authentication.getName()).orElseThrow();
@@ -122,6 +129,7 @@ public class CustomerController {
             Long cafeId = Long.valueOf(payload.get("cafeId").toString());
             String orderType = (String) payload.get("orderType");
             Long tableId = payload.get("tableId") != null ? Long.valueOf(payload.get("tableId").toString()) : null;
+            Long bookingId = payload.get("bookingId") != null ? Long.valueOf(payload.get("bookingId").toString()) : null;
             String specialInstructions = (String) payload.get("specialInstructions");
 
             @SuppressWarnings("unchecked")
@@ -149,6 +157,13 @@ public class CustomerController {
                 order.setTable(table);
             }
 
+            // Link booking to order for dine-in
+            if (bookingId != null) {
+                Booking booking = bookingService.getBookingById(bookingId)
+                        .orElseThrow(() -> new Exception("Booking not found"));
+                order.setBooking(booking);
+            }
+
             List<OrderItem> orderItems = new ArrayList<>();
             for (Map<String, Object> itemData : itemsPayload) {
                 Long menuItemId = Long.valueOf(itemData.get("menuItemId").toString());
@@ -166,8 +181,16 @@ public class CustomerController {
                 orderItems.add(orderItem);
             }
 
-            Order savedOrder = orderService.placeOrder(order, orderItems, customer);
-            return ResponseEntity.ok(Map.of("message", "Order placed successfully", "order", savedOrder));
+            // For DINE_IN with a booking, set status to PENDING_BOOKING
+            // The order will move to PLACED when the cafe owner confirms the booking
+            boolean isDineInWithBooking = "DINE_IN".equals(orderType.toUpperCase()) && bookingId != null;
+            Order savedOrder = orderService.placeOrder(order, orderItems, customer,
+                    isDineInWithBooking ? "PENDING_BOOKING" : "PLACED");
+
+            String message = isDineInWithBooking
+                    ? "Booking submitted! Your order will be confirmed once the café approves your booking."
+                    : "Order placed successfully";
+            return ResponseEntity.ok(Map.of("message", message, "order", savedOrder));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

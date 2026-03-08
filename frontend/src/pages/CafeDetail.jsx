@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/axiosClient';
 import toast from 'react-hot-toast';
-import { FaStar, FaMapMarkerAlt, FaClock, FaShoppingBag, FaChevronLeft, FaUsers, FaCalendarAlt, FaChair } from 'react-icons/fa';
+import { FaStar, FaMapMarkerAlt, FaClock, FaShoppingBag, FaChevronLeft, FaUsers, FaCalendarAlt, FaChair, FaUtensils, FaShoppingCart } from 'react-icons/fa';
 import '../styles/customer.css';
 
 export default function CafeDetail() {
@@ -23,7 +23,8 @@ export default function CafeDetail() {
     // Booking Details
     const [bookingForm, setBookingDetails] = useState({
         date: new Date().toISOString().split('T')[0],
-        time: '12:00',
+        time: '',
+        slotDuration: 60, // 60 or 120 minutes
         guests: 2,
         tableId: null
     });
@@ -149,7 +150,9 @@ export default function CafeDetail() {
                                     boxShadow: '0 2px 12px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', gap: '20px',
                                     transition: 'all 0.2s ease'
                                 }}>
-                                <div style={{fontSize: '2.5rem', lineHeight: 1}}>🍽️</div>
+                                <div style={{width: '44px', height: '44px', borderRadius: '12px', background: '#f5ede6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+                                    <FaUtensils size={20} color="#6f4e37" />
+                                </div>
                                 <div style={{flex: 1}}>
                                     <div style={{fontWeight: 800, fontSize: '1.05rem', color: '#1c1c1c'}}>Dine-In</div>
                                     <div style={{fontSize: '0.83rem', color: '#686b78', marginTop: '3px'}}>Book a table and enjoy your meal at the café.</div>
@@ -164,7 +167,9 @@ export default function CafeDetail() {
                                     boxShadow: '0 2px 12px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', gap: '20px',
                                     transition: 'all 0.2s ease'
                                 }}>
-                                <div style={{fontSize: '2.5rem', lineHeight: 1}}>🥡</div>
+                                <div style={{width: '44px', height: '44px', borderRadius: '12px', background: '#f5ede6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+                                    <FaShoppingBag size={20} color="#6f4e37" />
+                                </div>
                                 <div style={{flex: 1}}>
                                     <div style={{fontWeight: 800, fontSize: '1.05rem', color: '#1c1c1c'}}>Take-Away</div>
                                     <div style={{fontSize: '0.83rem', color: '#686b78', marginTop: '3px'}}>Skip the line and pick up your order on the go.</div>
@@ -177,26 +182,45 @@ export default function CafeDetail() {
             )}
 
             {/* Step 2: Dine-in Booking Details */}
-            {step === 2 && (
+            {step === 2 && (() => {
+                // Generate time slots based on cafe operating hours
+                const generateTimeSlots = () => {
+                    const slots = [];
+                    const openH = cafe.openingTime ? parseInt(cafe.openingTime.split(':')[0]) : 9;
+                    const openM = cafe.openingTime ? parseInt(cafe.openingTime.split(':')[1]) : 0;
+                    const closeH = cafe.closingTime ? parseInt(cafe.closingTime.split(':')[0]) : 22;
+                    const closeM = cafe.closingTime ? parseInt(cafe.closingTime.split(':')[1]) : 0;
+                    const durationMin = bookingForm.slotDuration;
+                    let h = openH, m = openM;
+                    while (true) {
+                        const endH = h + Math.floor((m + durationMin) / 60);
+                        const endM = (m + durationMin) % 60;
+                        if (endH > closeH || (endH === closeH && endM > closeM)) break;
+                        const startStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                        const endStr = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
+                        slots.push({ start: startStr, end: endStr, label: `${startStr} – ${endStr}` });
+                        // Move to next hour
+                        m += 60;
+                        h += Math.floor(m / 60);
+                        m = m % 60;
+                    }
+                    return slots;
+                };
+                const timeSlots = generateTimeSlots();
+                return (
                 <div style={{...page, paddingTop: '24px'}}>
                     <h2 style={{fontSize: '1.4rem', fontWeight: 800, marginBottom: '6px', color: '#1c1c1c'}}>Booking Details</h2>
-                    <p style={{color: '#686b78', fontSize: '0.88rem', marginBottom: '24px'}}>Select your preferred date, time and party size.</p>
+                    <p style={{color: '#686b78', fontSize: '0.88rem', marginBottom: '24px'}}>Select your preferred date, duration and time slot.</p>
                     <div style={{background: '#fff', borderRadius: '20px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)'}}>
                         <div style={{marginBottom: '20px'}}>
                             <label className="admin-filter-label" style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
                                 <FaCalendarAlt color="#6f4e37" /> Preferred Date
                             </label>
                             <input type="date" className="sw-input" value={bookingForm.date}
+                                min={new Date().toISOString().split('T')[0]}
                                 onChange={e => setBookingDetails({...bookingForm, date: e.target.value})} />
                         </div>
                         <div style={{marginBottom: '20px'}}>
-                            <label className="admin-filter-label" style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
-                                <FaClock color="#6f4e37" /> Preferred Time
-                            </label>
-                            <input type="time" className="sw-input" value={bookingForm.time}
-                                onChange={e => setBookingDetails({...bookingForm, time: e.target.value})} />
-                        </div>
-                        <div>
                             <label className="admin-filter-label" style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
                                 <FaUsers color="#6f4e37" /> Number of Guests
                             </label>
@@ -205,22 +229,73 @@ export default function CafeDetail() {
                                 {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n} Person{n > 1 ? 's' : ''}</option>)}
                             </select>
                         </div>
+                        <div style={{marginBottom: '20px'}}>
+                            <label className="admin-filter-label" style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px'}}>
+                                <FaClock color="#6f4e37" /> Slot Duration
+                            </label>
+                            <div style={{display: 'flex', gap: '10px'}}>
+                                {[{val: 60, label: '1 Hour'}, {val: 120, label: '2 Hours'}].map(d => (
+                                    <div key={d.val} onClick={() => setBookingDetails({...bookingForm, slotDuration: d.val, time: ''})}
+                                        style={{
+                                            flex: 1, padding: '14px 16px', borderRadius: '14px', cursor: 'pointer',
+                                            background: bookingForm.slotDuration === d.val ? '#6f4e37' : '#fff',
+                                            color: bookingForm.slotDuration === d.val ? '#fff' : '#1c1c1c',
+                                            border: bookingForm.slotDuration === d.val ? '2px solid #6f4e37' : '2px solid #e5e7eb',
+                                            textAlign: 'center', fontWeight: 800, fontSize: '0.95rem',
+                                            transition: 'all 0.2s ease'
+                                        }}>
+                                        {d.label}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <label className="admin-filter-label" style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px'}}>
+                                <FaClock color="#6f4e37" /> Select Time Slot
+                            </label>
+                            {timeSlots.length === 0 ? (
+                                <div style={{textAlign: 'center', padding: '20px', color: '#686b78', fontSize: '0.88rem'}}>
+                                    No slots available for the selected duration.
+                                </div>
+                            ) : (
+                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px'}}>
+                                    {timeSlots.map(slot => (
+                                        <div key={slot.start} onClick={() => setBookingDetails({...bookingForm, time: slot.start})}
+                                            style={{
+                                                padding: '12px 8px', borderRadius: '12px', cursor: 'pointer',
+                                                background: bookingForm.time === slot.start ? '#6f4e37' : '#f7f7f9',
+                                                color: bookingForm.time === slot.start ? '#fff' : '#1c1c1c',
+                                                border: bookingForm.time === slot.start ? '2px solid #6f4e37' : '2px solid transparent',
+                                                textAlign: 'center', fontWeight: 700, fontSize: '0.82rem',
+                                                transition: 'all 0.2s ease'
+                                            }}>
+                                            {slot.label}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <button
-                        style={{width: '100%', height: '54px', marginTop: '20px', background: '#1c1c1c', color: '#fff',
-                            border: 'none', borderRadius: '15px', fontWeight: 800, fontSize: '1rem', cursor: 'pointer'}}
+                        disabled={!bookingForm.time}
+                        style={{width: '100%', height: '54px', marginTop: '20px',
+                            background: bookingForm.time ? '#1c1c1c' : '#e0e0e0',
+                            color: bookingForm.time ? '#fff' : '#999',
+                            border: 'none', borderRadius: '15px', fontWeight: 800, fontSize: '1rem',
+                            cursor: bookingForm.time ? 'pointer' : 'not-allowed'}}
                         onClick={() => setStep(3)}>
-                        Select a Table →
+                        {bookingForm.time ? 'Select a Table →' : 'Pick a Time Slot to Continue'}
                     </button>
                 </div>
-            )}
+                );
+            })()}
 
             {/* Step 3: Table Selection */}
             {step === 3 && (
                 <div style={{...page, paddingTop: '24px'}}>
                     <h2 style={{fontSize: '1.4rem', fontWeight: 800, marginBottom: '6px', color: '#1c1c1c'}}>Pick Your Spot</h2>
                     <p style={{color: '#686b78', marginBottom: '24px', fontSize: '0.88rem'}}>
-                        Available tables for {bookingForm.guests} guest{bookingForm.guests > 1 ? 's' : ''} on {bookingForm.date} at {bookingForm.time}.
+                        Available tables for {bookingForm.guests} guest{bookingForm.guests > 1 ? 's' : ''} on {bookingForm.date} at {bookingForm.time} ({bookingForm.slotDuration === 120 ? '2 hrs' : '1 hr'}).
                     </p>
                     <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px'}}>
                         {tables.filter(t => t.capacity >= bookingForm.guests && t.status === 'AVAILABLE').map(table => (
@@ -228,20 +303,21 @@ export default function CafeDetail() {
                                 onClick={() => setBookingDetails({...bookingForm, tableId: table.id})}
                                 style={{
                                     background: bookingForm.tableId === table.id ? '#fff9f5' : '#fff',
-                                    border: bookingForm.tableId === table.id ? '2px solid #ff5200' : '2px solid #f1f1f6',
+                                    border: bookingForm.tableId === table.id ? '2px solid #6f4e37' : '2px solid #f1f1f6',
                                     borderRadius: '16px', overflow: 'hidden', cursor: 'pointer',
-                                    boxShadow: bookingForm.tableId === table.id ? '0 4px 18px rgba(255,82,0,0.18)' : '0 2px 10px rgba(0,0,0,0.05)',
+                                    boxShadow: bookingForm.tableId === table.id ? '0 4px 18px rgba(111,78,55,0.18)' : '0 2px 10px rgba(0,0,0,0.05)',
                                     transition: 'all 0.2s ease'
                                 }}>
                                 {/* Table Image */}
-                                <div style={{height: '110px', overflow: 'hidden', position: 'relative'}}>
+                                <div style={{height: '110px', overflow: 'hidden', position: 'relative', background: '#f5ede6'}}>
                                     <img
-                                        src={table.imageUrl || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=250&fit=crop'}
+                                        src={table.imageUrl || `https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=250&fit=crop&q=80&t=${table.id}`}
                                         alt={`Table ${table.tableNumber}`}
                                         style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                                        onError={e => { e.target.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=250&fit=crop'; }}
                                     />
                                     {bookingForm.tableId === table.id && (
-                                        <div style={{position: 'absolute', top: '8px', right: '8px', background: '#ff5200', color: '#fff',
+                                        <div style={{position: 'absolute', top: '8px', right: '8px', background: '#6f4e37', color: '#fff',
                                             borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center',
                                             justifyContent: 'center', fontSize: '0.85rem', fontWeight: 800}}>✓</div>
                                     )}
@@ -381,12 +457,12 @@ export default function CafeDetail() {
                         </div>
 
                         <aside className="sw-cart-sidebar" style={{background: '#fff', borderRadius: '20px', boxShadow: '0 2px 16px rgba(0,0,0,0.07)'}}>
-                            <h3 style={{fontWeight: 800, fontSize: '1.1rem', marginBottom: '20px', color: '#1c1c1c'}}>
-                                🛒 Cart Summary
+                            <h3 style={{fontWeight: 800, fontSize: '1.1rem', marginBottom: '20px', color: '#1c1c1c', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                <FaShoppingCart color="#6f4e37" /> Cart Summary
                             </h3>
                             {cart.length === 0 ? (
                                 <div style={{textAlign: 'center', padding: '40px 0'}}>
-                                    <div style={{fontSize: '2.5rem', marginBottom: '12px', opacity: 0.25}}>🛒</div>
+                                    <FaShoppingCart size={40} color="#d4c0a8" style={{marginBottom: '12px'}} />
                                     <p style={{color: '#686b78', fontSize: '0.85rem'}}>Your cart is empty.</p>
                                     <p style={{color: '#686b78', fontSize: '0.8rem', marginTop: '4px'}}>Add items from the menu.</p>
                                 </div>
@@ -410,11 +486,11 @@ export default function CafeDetail() {
                                         </div>
                                         {orderType === 'DINE_IN' && bookingForm.tableId && (
                                             <div style={{marginTop: '12px', fontSize: '0.8rem', color: '#686b78', background: '#f7f7f9', borderRadius: '10px', padding: '10px 12px'}}>
-                                                🍽️ Table booked for {bookingForm.guests} guest{bookingForm.guests > 1 ? 's' : ''} · {bookingForm.date} {bookingForm.time}
+                                                <FaChair style={{marginRight: '5px'}} /> Table booked for {bookingForm.guests} guest{bookingForm.guests > 1 ? 's' : ''} · {bookingForm.date} {bookingForm.time} ({bookingForm.slotDuration === 120 ? '2 hrs' : '1 hr'})
                                             </div>
                                         )}
                                         <button
-                                            style={{width: '100%', marginTop: '20px', height: '50px', background: '#ff5200', color: '#fff',
+                                            style={{width: '100%', marginTop: '20px', height: '50px', background: '#6f4e37', color: '#fff',
                                                 border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer'}}
                                             onClick={() => navigate('/review-order', { state: { cart, cafe, orderType, bookingDetails: orderType === 'DINE_IN' ? bookingForm : null } })}>
                                             Proceed to Checkout →

@@ -10,7 +10,8 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
         categoryId: "", price: "", isAvailable: true,
         description: "", tableName: "", capacity: "2",
         tableType: "STANDARD", status: "AVAILABLE",
-        displayOrder: "0", imageUrl: ""
+        displayOrder: "0", imageUrl: "",
+        slotDuration: "60", startTime: ""
     });
 
     // ... same effect logic ...
@@ -24,7 +25,8 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
                 price: "", isAvailable: true,
                 description: "", tableName: "", capacity: "2",
                 tableType: "STANDARD", status: "AVAILABLE",
-                displayOrder: "0", imageUrl: ""
+                displayOrder: "0", imageUrl: "",
+                slotDuration: "60", startTime: ""
             };
             setFormData(initialData);
         }
@@ -199,7 +201,17 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
                         )}
 
                         {/* Booking Form */}
-                        {type === "booking" && (
+                        {type === "booking" && (() => {
+                            const dur = parseInt(formData.slotDuration || 60);
+                            const slots = [];
+                            for (let h = 9; h < 22; h++) {
+                                const endH = h + Math.floor(dur / 60);
+                                if (endH > 22) break;
+                                const s = `${String(h).padStart(2,'0')}:00`;
+                                const e = `${String(endH).padStart(2,'0')}:00`;
+                                slots.push({ value: s, label: `${s} – ${e}` });
+                            }
+                            return (
                             <>
                                 <div style={gridStyle}>
                                     <div style={inputGroupStyle}>
@@ -232,11 +244,38 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
                                     </div>
                                 </div>
                                 <div style={inputGroupStyle}>
-                                    <label style={labelStyle}>Check-in Time (24h format)</label>
-                                    <input type="number" name="displayOrder" value={formData.displayOrder || "12"} onChange={handleChange} style={fieldStyle} min="0" max="23" placeholder="e.g. 18 for 6 PM" required />
+                                    <label style={labelStyle}>Slot Duration</label>
+                                    <div style={{ display: "flex", gap: "8px" }}>
+                                        {[{v: "60", l: "1 Hour"}, {v: "120", l: "2 Hours"}].map(d => (
+                                            <div key={d.v} onClick={() => setFormData(prev => ({...prev, slotDuration: d.v, startTime: ""}))}
+                                                style={{
+                                                    flex: 1, padding: "10px", borderRadius: "10px", cursor: "pointer", textAlign: "center",
+                                                    fontWeight: 700, fontSize: "0.85rem", transition: "all 0.2s",
+                                                    background: formData.slotDuration === d.v ? "#6f4e37" : "#f5f1ec",
+                                                    color: formData.slotDuration === d.v ? "#fff" : "#2e241f",
+                                                    border: formData.slotDuration === d.v ? "2px solid #6f4e37" : "2px solid #d4c0a8"
+                                                }}>{d.l}</div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div style={inputGroupStyle}>
+                                    <label style={labelStyle}>Time Slot</label>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+                                        {slots.map(s => (
+                                            <div key={s.value} onClick={() => setFormData(prev => ({...prev, startTime: s.value}))}
+                                                style={{
+                                                    padding: "8px 4px", borderRadius: "8px", cursor: "pointer", textAlign: "center",
+                                                    fontWeight: 600, fontSize: "0.78rem", transition: "all 0.2s",
+                                                    background: formData.startTime === s.value ? "#6f4e37" : "#faf8f5",
+                                                    color: formData.startTime === s.value ? "#fff" : "#2e241f",
+                                                    border: formData.startTime === s.value ? "2px solid #6f4e37" : "1px solid #ece5dc"
+                                                }}>{s.label}</div>
+                                        ))}
+                                    </div>
                                 </div>
                             </>
-                        )}
+                            );
+                        })()}
 
                         {/* Menu Item Form */}
                         {type === "menu" && (

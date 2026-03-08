@@ -2,12 +2,14 @@ import React, { useEffect, useState, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import api from '../api/axiosClient'
 import toast from 'react-hot-toast'
+import { FaInbox, FaFire, FaBell, FaUser, FaUtensils, FaConciergeBell, FaFlagCheckered, FaWalking } from 'react-icons/fa'
 import '../styles/dashboard.css'
 
 const STATUS_META = {
-  SENT_TO_KITCHEN: { label: '📥 New',       bg: '#faf5ef', border: '#d4c0a8', color: '#6f4e37', dot: '#a67c52' },
-  PREPARING:       { label: '🔥 Preparing', bg: '#fff8f0', border: '#f5d9b0', color: '#b45309', dot: '#d97706' },
-  READY:           { label: '✅ Ready',      bg: '#f0fdf4', border: '#86efac', color: '#16a34a', dot: '#22c55e' },
+  SENT_TO_KITCHEN: { label: 'New',       bg: '#faf5ef', border: '#d4c0a8', color: '#6f4e37', dot: '#a67c52' },
+  PREPARING:       { label: 'Preparing', bg: '#fff8f0', border: '#f5d9b0', color: '#b45309', dot: '#d97706' },
+  READY:           { label: 'Ready',      bg: '#f0fdf4', border: '#86efac', color: '#16a34a', dot: '#22c55e' },
+  DELIVERED:       { label: 'Delivered',  bg: '#f3f4f6', border: '#d1d5db', color: '#6b7280', dot: '#9ca3af' },
 }
 
 const FILTERS = [
@@ -15,16 +17,19 @@ const FILTERS = [
   { key: 'SENT_TO_KITCHEN', label: 'New' },
   { key: 'PREPARING',       label: 'Preparing' },
   { key: 'READY',           label: 'Ready' },
+  { key: 'DELIVERED',       label: 'History' },
 ]
 
 export default function ChefDashboard() {
   const { user } = useContext(AuthContext)
   const [orders, setOrders]   = useState([])
+  const [historyOrders, setHistoryOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter]   = useState('ALL')
 
   useEffect(() => {
     loadOrders()
+    loadHistory()
     const iv = setInterval(loadOrders, 12000)
     return () => clearInterval(iv)
   }, [])
@@ -35,6 +40,13 @@ export default function ChefDashboard() {
       setOrders(res.data || [])
     } catch { /* ignore */ }
     setLoading(false)
+  }
+
+  const loadHistory = async () => {
+    try {
+      const res = await api.get('/chef/orders/history')
+      setHistoryOrders(res.data || [])
+    } catch { /* ignore */ }
   }
 
   const startPreparing = async (orderId) => {
@@ -48,20 +60,24 @@ export default function ChefDashboard() {
   const markReady = async (orderId) => {
     try {
       await api.put(`/chef/orders/${orderId}/ready`)
-      toast.success('Order marked ready! 🔔')
+      toast.success('Order marked ready!')
       loadOrders()
+      loadHistory()
     } catch (err) { toast.error(err.response?.data?.error || 'Failed') }
   }
 
   const newCount      = orders.filter(o => o.status === 'SENT_TO_KITCHEN').length
   const preparingCount = orders.filter(o => o.status === 'PREPARING').length
   const readyCount    = orders.filter(o => o.status === 'READY').length
+  const deliveredCount = historyOrders.length
 
-  const filtered = filter === 'ALL' ? orders : orders.filter(o => o.status === filter)
+  const allOrders = filter === 'DELIVERED' ? historyOrders : orders
+  const filtered = filter === 'ALL' ? orders : filter === 'DELIVERED' ? historyOrders : orders.filter(o => o.status === filter)
 
   const filterCount = (key) => key === 'ALL' ? orders.length
     : key === 'SENT_TO_KITCHEN' ? newCount
     : key === 'PREPARING' ? preparingCount
+    : key === 'DELIVERED' ? deliveredCount
     : readyCount
 
   if (loading) return (
@@ -87,13 +103,13 @@ export default function ChefDashboard() {
           display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:16 }}>
           <div>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
-              <span style={{ fontSize:'1.6rem' }}>☕</span>
+              <FaUtensils style={{ fontSize:'1.6rem', color:'rgba(245,233,220,0.6)' }} />
               <span style={{ color:'rgba(245,233,220,0.6)', fontSize:'0.72rem', fontWeight:700,
                 letterSpacing:'2.5px', textTransform:'uppercase' }}>Brew &amp; Co · Kitchen</span>
             </div>
             <h1 style={{ color:'#fff', fontSize:'1.9rem', fontWeight:900, margin:'0 0 6px',
               letterSpacing:'-0.5px' }}>
-              Hey, {user?.firstName}! 👨‍🍳
+              Hey, {user?.firstName}!
             </h1>
             <p style={{ color:'rgba(245,233,220,0.7)', fontSize:'0.88rem', margin:0 }}>
               Orders from waiters appear here · auto-refresh every 12s
@@ -117,11 +133,11 @@ export default function ChefDashboard() {
         {/* ── STAT CARDS ── */}
         <div className="stats-grid" style={{ gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', marginBottom:24 }}>
           {[
-            { icon:'📥', count: newCount,       label:'New from Waiter',  sub:'Waiting to be prepared',
+            { icon:<FaInbox size={20} color="#fff" />, count: newCount,       label:'New from Waiter',  sub:'Waiting to be prepared',
               accent:'#6f4e37', shadow:'rgba(111,78,55,0.18)' },
-            { icon:'🔥', count: preparingCount, label:'Currently Cooking', sub:'In progress right now',
+            { icon:<FaFire size={20} color="#fff" />, count: preparingCount, label:'Currently Cooking', sub:'In progress right now',
               accent:'#b45309', shadow:'rgba(180,83,9,0.18)' },
-            { icon:'🔔', count: readyCount,     label:'Ready for Pickup',  sub:'Waiting for waiter',
+            { icon:<FaBell size={20} color="#fff" />, count: readyCount,     label:'Ready for Pickup',  sub:'Waiting for waiter',
               accent:'#16a34a', shadow:'rgba(22,163,74,0.18)' },
           ].map((s, i) => (
             <div key={i} className="stat-card" style={{
@@ -151,11 +167,11 @@ export default function ChefDashboard() {
           <div style={{ display:'flex', alignItems:'center', gap:0, overflowX:'auto', paddingBottom:2 }}
             className="hide-scrollbar">
             {[
-              { label:'Owner Confirms',    icon:'👤', done:true,                                          active:false },
-              { label:'Waiter Sends',      icon:'🛎️', done: newCount>0||preparingCount>0||readyCount>0,  active:false },
-              { label:'You Prepare',       icon:'👨‍🍳', done: readyCount>0,                               active: preparingCount>0||newCount>0 },
-              { label:'Mark Ready',        icon:'🔔', done: readyCount>0,                                active: preparingCount>0 },
-              { label:'Waiter Delivers',   icon:'🚶', done:false,                                        active: readyCount>0 },
+              { label:'Owner Confirms',    icon:<FaUser size={16} />, done:true,                                          active:false },
+              { label:'Waiter Sends',      icon:<FaConciergeBell size={16} />, done: newCount>0||preparingCount>0||readyCount>0,  active:false },
+              { label:'You Prepare',       icon:<FaUtensils size={16} />, done: readyCount>0,                               active: preparingCount>0||newCount>0 },
+              { label:'Mark Ready',        icon:<FaBell size={16} />, done: readyCount>0,                                active: preparingCount>0 },
+              { label:'Waiter Delivers',   icon:<FaWalking size={16} />, done:false,                                        active: readyCount>0 },
             ].map((s, i, arr) => (
               <React.Fragment key={i}>
                 <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6,
@@ -206,7 +222,7 @@ export default function ChefDashboard() {
         {/* ── ORDER CARDS ── */}
         {filtered.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state__icon">👨‍🍳</div>
+            <div className="empty-state__icon">No orders</div>
             <div className="empty-state__text">No orders here</div>
             <div className="empty-state__subtext">
               {filter === 'ALL' ? 'Orders sent by waiters will appear here automatically.'
@@ -257,18 +273,18 @@ export default function ChefDashboard() {
                     <div style={{ display:'flex', gap:7, flexWrap:'wrap' }}>
                       <span style={{ background:'#faf5ef', border:'1px solid #e2d5c8',
                         borderRadius:8, padding:'4px 10px', fontSize:'0.74rem', fontWeight:600, color:'#6f4e37' }}>
-                        {order.orderType === 'DINE_IN' ? '🍽️ Dine-In' : '🥡 Takeaway'}
+                        {order.orderType === 'DINE_IN' ? 'Dine-In' : 'Takeaway'}
                       </span>
                       {order.cafeTable && (
                         <span style={{ background:'#faf5ef', border:'1px solid #e2d5c8',
                           borderRadius:8, padding:'4px 10px', fontSize:'0.74rem', fontWeight:600, color:'#a67c52' }}>
-                          🪑 Table {order.cafeTable.tableNumber}
+                          Table {order.cafeTable.tableNumber}
                         </span>
                       )}
                       {order.orderItems?.length > 0 && (
                         <span style={{ background:'#faf5ef', border:'1px solid #e2d5c8',
                           borderRadius:8, padding:'4px 10px', fontSize:'0.74rem', fontWeight:600, color:'#8b6f63' }}>
-                          🛍️ {order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}
+                          {order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}
                         </span>
                       )}
                     </div>
@@ -278,7 +294,7 @@ export default function ChefDashboard() {
                       <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:10,
                         padding:'10px 12px', fontSize:'0.78rem', color:'#92400e', fontWeight:500,
                         display:'flex', gap:8, alignItems:'flex-start' }}>
-                        <span style={{ flexShrink:0 }}>📝</span>
+                        <span style={{ flexShrink:0, fontWeight:700, color:'#92400e' }}>Note:</span>
                         <span>{order.specialInstructions}</span>
                       </div>
                     )}
@@ -322,7 +338,7 @@ export default function ChefDashboard() {
                         onClick={() => startPreparing(order.id)}
                         style={{ width:'100%', padding:'12px', fontSize:'0.88rem', borderRadius:10,
                           display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-                        🔥 Start Preparing
+                        Start Preparing
                       </button>
                     )}
                     {order.status === 'PREPARING' && (
@@ -330,14 +346,21 @@ export default function ChefDashboard() {
                         onClick={() => markReady(order.id)}
                         style={{ width:'100%', padding:'12px', fontSize:'0.88rem', borderRadius:10,
                           display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-                        ✅ Mark as Ready
+                        Mark as Ready
                       </button>
                     )}
                     {order.status === 'READY' && (
                       <div style={{ textAlign:'center', padding:'11px', borderRadius:10,
                         background:'#f0fdf4', border:'1px solid #bbf7d0',
                         color:'#16a34a', fontWeight:600, fontSize:'0.84rem' }}>
-                        🔔 Waiting for waiter pickup…
+                        Waiting for waiter pickup...
+                      </div>
+                    )}
+                    {order.status === 'DELIVERED' && (
+                      <div style={{ textAlign:'center', padding:'11px', borderRadius:10,
+                        background:'#f3f4f6', border:'1px solid #d1d5db',
+                        color:'#6b7280', fontWeight:600, fontSize:'0.84rem' }}>
+                        Delivered {order.updatedAt ? new Date(order.updatedAt).toLocaleDateString() : ''}
                       </div>
                     )}
                   </div>

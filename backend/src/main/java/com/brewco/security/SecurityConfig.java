@@ -62,6 +62,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/api/chef/**")).hasAuthority("ROLE_CHEF")
                         .requestMatchers(new AntPathRequestMatcher("/api/waiter/**")).hasAuthority("ROLE_WAITER")
                         .requestMatchers(new AntPathRequestMatcher("/api/customer/**")).hasAuthority("ROLE_CUSTOMER")
+                        .requestMatchers(new AntPathRequestMatcher("/api/payments/**")).hasAuthority("ROLE_CUSTOMER")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

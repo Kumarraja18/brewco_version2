@@ -1,23 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import api from '../api/axiosClient';
 import toast from 'react-hot-toast';
-import { FaChevronLeft, FaTrash, FaPlus, FaMinus, FaRegClock, FaUtensils, FaCreditCard } from 'react-icons/fa';
+import { FaChevronLeft, FaPlus, FaMinus, FaRegClock, FaUtensils, FaCreditCard, FaMoneyBillWave, FaShieldAlt } from 'react-icons/fa';
 import '../styles/customer.css';
 
 export default function ReviewOrder() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
     const { cart: initialCart, cafe, orderType, bookingDetails } = location.state || {};
 
     const [cart, setCart] = useState(initialCart || []);
     const [loading, setLoading] = useState(false);
     const [specialInstructions, setInstructions] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('CASH'); // CASH or RAZORPAY
 
-    if (!cafe || !cart.length) {
-        useEffect(() => { navigate('/customer-dashboard'); }, []);
-        return null;
-    }
+    useEffect(() => {
+        if (!cafe || !initialCart?.length) {
+            navigate('/customer-dashboard');
+        }
+    }, []);
+
+    if (!cafe || !cart.length) return null;
 
     const updateQty = (id, delta) => {
         setCart(prev => prev.map(c => {
@@ -33,19 +39,70 @@ export default function ReviewOrder() {
     const gst = subTotal * 0.05;
     const grandTotal = subTotal + gst;
 
+    // Open Razorpay checkout modal
+    const openRazorpayCheckout = (razorpayData, orderId) => {
+        const options = {
+            key: razorpayData.keyId,
+            amount: razorpayData.amount,
+            currency: razorpayData.currency,
+            name: 'Brew & Co',
+            description: `Order at ${cafe.name} (Demo)`,
+            order_id: razorpayData.razorpayOrderId,
+            handler: async function (response) {
+                try {
+                    await api.post('/payments/verify', {
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                        payment_id: String(razorpayData.paymentId)
+                    });
+                    toast.success('Payment successful!');
+                    navigate(`/order-tracking/${orderId}`);
+                } catch (err) {
+                    toast.error('Payment verification failed. Contact support.');
+                    navigate(`/order-tracking/${orderId}`);
+                }
+            },
+            prefill: {
+                name: user ? `${user.firstName} ${user.lastName}` : '',
+                email: user?.email || '',
+            },
+            theme: {
+                color: '#6f4e37'
+            },
+            modal: {
+                ondismiss: function () {
+                    toast('Payment cancelled. Order is placed — pay at arrival.', { icon: 'i' });
+                    navigate(`/order-tracking/${orderId}`);
+                }
+            }
+        };
+
+        if (!window.Razorpay) {
+            toast.error('Razorpay SDK not loaded. Please refresh the page.');
+            return;
+        }
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+    };
+
     const handlePlaceOrder = async () => {
         setLoading(true);
         try {
-            // 1. If Dine-in, create booking first (optional, backend placeOrder could handle this too but we follow controller)
             let tableId = bookingDetails?.tableId;
+            let bookingId = null;
+
+            // 1. If Dine-in, create booking first
             if (orderType === 'DINE_IN') {
-                await api.post('/customer/bookings', {
+                const bookingRes = await api.post('/customer/bookings', {
                     cafeId: cafe.id,
                     bookingDate: bookingDetails.date,
                     startTime: bookingDetails.time,
+                    slotDuration: bookingDetails.slotDuration || 60,
                     numberOfGuests: bookingDetails.guests,
                     tableId: tableId
                 });
+                bookingId = bookingRes.data.bookingId;
             }
 
             // 2. Place the order
@@ -53,6 +110,7 @@ export default function ReviewOrder() {
                 cafeId: cafe.id,
                 orderType: orderType,
                 tableId: tableId,
+                bookingId: bookingId,
                 specialInstructions: specialInstructions,
                 items: cart.map(c => ({
                     menuItemId: c.id,
@@ -64,7 +122,29 @@ export default function ReviewOrder() {
             const res = await api.post('/customer/orders', orderPayload);
             const savedOrder = res.data.order;
 
-            toast.success('Order placed successfully!');
+            // 3. If Razorpay payment, initiate payment flow
+            if (paymentMethod === 'RAZORPAY') {
+                try {
+                    const payRes = await api.post('/payments/create-order', {
+                        orderId: savedOrder.id
+                    });
+                    setLoading(false);
+                    openRazorpayCheckout(payRes.data, savedOrder.id);
+                    return;
+                } catch (payErr) {
+                    const errMsg = payErr.response?.data?.error || 'Payment initiation failed';
+                    toast.error(errMsg);
+                    navigate(`/order-tracking/${savedOrder.id}`);
+                    return;
+                }
+            }
+
+            // 4. Cash payment — go directly to tracking
+            if (orderType === 'DINE_IN') {
+                toast.success('Booking submitted! Your order will be confirmed once the cafe approves.');
+            } else {
+                toast.success('Order placed successfully!');
+            }
             navigate(`/order-tracking/${savedOrder.id}`);
         } catch (err) {
             toast.error(err.response?.data?.error || 'Failed to place order');
@@ -108,7 +188,7 @@ export default function ReviewOrder() {
                         ))}
                         <div style={{ marginTop: '20px' }}>
                             <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#686b78', display: 'block', marginBottom: '8px' }}>Special Instructions</label>
-                            <textarea 
+                            <textarea
                                 placeholder="Add any notes (e.g. less sugar, extra hot)..."
                                 style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d4d5d9', resize: 'none', height: '80px', fontFamily: 'inherit' }}
                                 value={specialInstructions}
@@ -125,7 +205,7 @@ export default function ReviewOrder() {
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                             <div>
-                                <div style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>Café</div>
+                                <div style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>Cafe</div>
                                 <div style={{ fontWeight: 700 }}>{cafe.name}</div>
                             </div>
                             <div>
@@ -135,8 +215,8 @@ export default function ReviewOrder() {
                             {orderType === 'DINE_IN' && (
                                 <>
                                     <div>
-                                        <div style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>Date & Time</div>
-                                        <div style={{ fontWeight: 700 }}>{bookingDetails.date} at {bookingDetails.time}</div>
+                                        <div style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>Date & Time Slot</div>
+                                        <div style={{ fontWeight: 700 }}>{bookingDetails.date} at {bookingDetails.time} ({bookingDetails.slotDuration === 120 ? '2 hrs' : '1 hr'})</div>
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>Guests</div>
@@ -165,20 +245,85 @@ export default function ReviewOrder() {
                             <span>₹{grandTotal.toFixed(2)}</span>
                         </div>
 
-                        <div style={{ marginTop: '30px', background: '#f9fafb', padding: '15px', borderRadius: '12px', marginBottom: '20px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', fontWeight: 700 }}>
-                                <FaCreditCard color="#60b246" />
-                                <span>CASH ON ARRIVAL</span>
+                        {/* Payment Method Selector */}
+                        <div style={{ marginTop: '24px' }}>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#686b78', textTransform: 'uppercase', marginBottom: '10px' }}>
+                                Payment Method
                             </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {/* Cash on Arrival */}
+                                <div
+                                    onClick={() => setPaymentMethod('CASH')}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '12px',
+                                        padding: '14px 16px', borderRadius: '12px', cursor: 'pointer',
+                                        background: paymentMethod === 'CASH' ? '#f5ede6' : '#f9fafb',
+                                        border: paymentMethod === 'CASH' ? '2px solid #6f4e37' : '2px solid #e5e7eb',
+                                        transition: 'all 0.2s ease'
+                                    }}>
+                                    <div style={{
+                                        width: '18px', height: '18px', borderRadius: '50%',
+                                        border: paymentMethod === 'CASH' ? '5px solid #6f4e37' : '2px solid #ccc',
+                                        flexShrink: 0
+                                    }} />
+                                    <FaMoneyBillWave size={16} color={paymentMethod === 'CASH' ? '#6f4e37' : '#999'} />
+                                    <div>
+                                        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: paymentMethod === 'CASH' ? '#6f4e37' : '#1c1c1c' }}>Cash on Arrival</div>
+                                        <div style={{ fontSize: '0.72rem', color: '#9ca3af' }}>Pay when you arrive at the cafe</div>
+                                    </div>
+                                </div>
+                                {/* Pay Online (Razorpay) */}
+                                <div
+                                    onClick={() => setPaymentMethod('RAZORPAY')}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '12px',
+                                        padding: '14px 16px', borderRadius: '12px', cursor: 'pointer',
+                                        background: paymentMethod === 'RAZORPAY' ? '#f5ede6' : '#f9fafb',
+                                        border: paymentMethod === 'RAZORPAY' ? '2px solid #6f4e37' : '2px solid #e5e7eb',
+                                        transition: 'all 0.2s ease'
+                                    }}>
+                                    <div style={{
+                                        width: '18px', height: '18px', borderRadius: '50%',
+                                        border: paymentMethod === 'RAZORPAY' ? '5px solid #6f4e37' : '2px solid #ccc',
+                                        flexShrink: 0
+                                    }} />
+                                    <FaCreditCard size={16} color={paymentMethod === 'RAZORPAY' ? '#6f4e37' : '#999'} />
+                                    <div>
+                                        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: paymentMethod === 'RAZORPAY' ? '#6f4e37' : '#1c1c1c' }}>Pay Online</div>
+                                        <div style={{ fontSize: '0.72rem', color: '#9ca3af' }}>UPI, Card, Net Banking via Razorpay</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {paymentMethod === 'RAZORPAY' && (
+                                <div style={{
+                                    marginTop: '10px', padding: '10px 12px', borderRadius: '8px',
+                                    background: '#fef3c7', fontSize: '0.75rem', color: '#92400e',
+                                    display: 'flex', alignItems: 'center', gap: '8px'
+                                }}>
+                                    <FaShieldAlt size={12} />
+                                    Demo mode -- Razorpay test payment (no real charge)
+                                </div>
+                            )}
                         </div>
 
-                        <button 
+                        <button
                             className="brew-btn brew-btn--primary"
-                            style={{ width: '100%', height: '55px', background: '#60b246', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}
+                            style={{
+                                width: '100%', height: '55px', marginTop: '20px',
+                                background: paymentMethod === 'RAZORPAY' ? '#2563eb' : '#60b246',
+                                color: '#fff', border: 'none', borderRadius: '12px',
+                                fontWeight: 800, fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer',
+                                transition: 'all 0.2s ease'
+                            }}
                             disabled={loading}
                             onClick={handlePlaceOrder}
                         >
-                            {loading ? 'Processing...' : `Confirm Order • ₹${grandTotal.toFixed(2)}`}
+                            {loading ? 'Processing...'
+                                : paymentMethod === 'RAZORPAY'
+                                    ? `Pay Online \u2022 \u20B9${grandTotal.toFixed(2)}`
+                                    : `Confirm Order \u2022 \u20B9${grandTotal.toFixed(2)}`
+                            }
                         </button>
                     </div>
                 </aside>

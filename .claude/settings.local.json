@@ -6,7 +6,17 @@
       "Bash(python:*)",
       "Bash(mvn compile:*)",
       "Bash(npx vite:*)",
-      "Bash(claude mcp:*)"
+      "Bash(claude mcp:*)",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__evaluate_script",
+      "Bash(./mvnw compile:*)",
+      "Bash(ls mvnw*:*)",
+      "Bash(mvn clean compile -q)",
+      "Bash(mvn spring-boot:run -q)"
     ]
   }
 }

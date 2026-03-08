@@ -4,7 +4,17 @@ import api from '../api/axiosClient'
 import { FaChevronLeft, FaClock, FaCheckCircle, FaMapMarkerAlt, FaReceipt, FaMotorcycle, FaUtensils, FaUser } from 'react-icons/fa'
 import '../styles/customer.css'
 
-const STATUS_STEPS = [
+const STATUS_STEPS_DINEIN = [
+  { key: 'PENDING_BOOKING', label: 'Booking Submitted', icon: <FaReceipt /> },
+  { key: 'PLACED', label: 'Booking Confirmed', icon: <FaCheckCircle /> },
+  { key: 'CONFIRMED', label: 'Order Confirmed', icon: <FaCheckCircle /> },
+  { key: 'SENT_TO_KITCHEN', label: 'In Kitchen', icon: <FaUtensils /> },
+  { key: 'PREPARING', label: 'Preparing', icon: <FaClock /> },
+  { key: 'READY', label: 'Ready for Pickup', icon: <FaCheckCircle /> },
+  { key: 'DELIVERED', label: 'Served', icon: <FaUser /> }
+]
+
+const STATUS_STEPS_DEFAULT = [
   { key: 'PLACED', label: 'Order Placed', icon: <FaReceipt /> },
   { key: 'CONFIRMED', label: 'Confirmed', icon: <FaCheckCircle /> },
   { key: 'SENT_TO_KITCHEN', label: 'In Kitchen', icon: <FaUtensils /> },
@@ -41,6 +51,8 @@ export default function OrderTracking() {
     </div>
   )
 
+  const STATUS_STEPS = order.orderType === 'DINE_IN' && (order.status === 'PENDING_BOOKING' || order.booking)
+    ? STATUS_STEPS_DINEIN : STATUS_STEPS_DEFAULT
   const currentStep = STATUS_STEPS.findIndex(s => s.key === order.status)
   const isCancelled = order.status === 'CANCELLED'
 
@@ -97,6 +109,7 @@ export default function OrderTracking() {
                       <div style={{ fontWeight: 700, fontSize: '0.95rem', color: isActive ? '#1c1c1c' : '#93959f' }}>{step.label}</div>
                       {isCurrent && (
                         <div style={{ fontSize: '0.8rem', color: '#686b78', marginTop: '4px' }}>
+                          {order.status === 'PENDING_BOOKING' && 'Your booking is awaiting café confirmation...'}
                           {order.status === 'PLACED' && 'Waiting for café to accept...'}
                           {order.status === 'CONFIRMED' && 'Café has accepted your order.'}
                           {order.status === 'PREPARING' && 'Chef is working their magic!'}

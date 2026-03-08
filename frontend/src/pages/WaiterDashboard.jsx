@@ -3,13 +3,14 @@ import { AuthContext } from '../context/AuthContext'
 import api from '../api/axiosClient'
 import toast from 'react-hot-toast'
 import '../styles/dashboard.css'
+import { FaInbox, FaFire, FaBell, FaCheckCircle, FaUser, FaUtensils, FaConciergeBell, FaFlagCheckered, FaWalking } from 'react-icons/fa'
 
 const STATUS_META = {
-  CONFIRMED:       { label: '📥 New',        bg: '#faf5ef', border: '#d4c0a8', color: '#6f4e37', dot: '#a67c52' },
-  SENT_TO_KITCHEN: { label: '🍳 In Kitchen',  bg: '#fff8f0', border: '#f5d9b0', color: '#b45309', dot: '#d97706' },
-  PREPARING:       { label: '🔥 Preparing',   bg: '#fff8f0', border: '#f5d9b0', color: '#b45309', dot: '#f59e0b' },
-  READY:           { label: '🔔 Ready!',      bg: '#f0fdf4', border: '#86efac', color: '#16a34a', dot: '#22c55e' },
-  DELIVERED:       { label: '✅ Delivered',   bg: '#faf8f5', border: '#e2d5c8', color: '#8b6f63', dot: '#a67c52' },
+  CONFIRMED:       { label: 'New',        bg: '#faf5ef', border: '#d4c0a8', color: '#6f4e37', dot: '#a67c52' },
+  SENT_TO_KITCHEN: { label: 'In Kitchen',  bg: '#fff8f0', border: '#f5d9b0', color: '#b45309', dot: '#d97706' },
+  PREPARING:       { label: 'Preparing',   bg: '#fff8f0', border: '#f5d9b0', color: '#b45309', dot: '#f59e0b' },
+  READY:           { label: 'Ready',       bg: '#f0fdf4', border: '#86efac', color: '#16a34a', dot: '#22c55e' },
+  DELIVERED:       { label: 'Delivered',   bg: '#faf8f5', border: '#e2d5c8', color: '#8b6f63', dot: '#a67c52' },
 }
 
 const FILTERS = [
@@ -52,7 +53,7 @@ export default function WaiterDashboard() {
   const markDelivered = async (orderId) => {
     try {
       await api.put(`/waiter/orders/${orderId}/deliver`)
-      toast.success('Order delivered! 🎉')
+      toast.success('Order delivered!')
       loadOrders()
     } catch (err) { toast.error(err.response?.data?.error || 'Failed') }
   }
@@ -94,13 +95,13 @@ export default function WaiterDashboard() {
           display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:16 }}>
           <div>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
-              <span style={{ fontSize:'1.6rem' }}>☕</span>
+              <span style={{ fontSize:'1.3rem', color:'rgba(245,233,220,0.8)' }}><FaConciergeBell /></span>
               <span style={{ color:'rgba(245,233,220,0.6)', fontSize:'0.72rem', fontWeight:700,
                 letterSpacing:'2.5px', textTransform:'uppercase' }}>Brew &amp; Co · Waiter</span>
             </div>
             <h1 style={{ color:'#fff', fontSize:'1.9rem', fontWeight:900, margin:'0 0 6px',
               letterSpacing:'-0.5px' }}>
-              Hey, {user?.firstName}! 👋
+              Hey, {user?.firstName}!
             </h1>
             <p style={{ color:'rgba(245,233,220,0.7)', fontSize:'0.88rem', margin:0 }}>
               Manage order flow · auto-refreshing every 8s
@@ -124,13 +125,13 @@ export default function WaiterDashboard() {
         {/* ── STAT CARDS ── */}
         <div className="stats-grid" style={{ gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', marginBottom:24 }}>
           {[
-            { icon:'📥', count: confirmedCount, label:'New Orders',      sub:'Need to send to kitchen',
+            { icon:<FaInbox size={20} color="#fff" />, count: confirmedCount, label:'New Orders',      sub:'Need to send to kitchen',
               accent:'#6f4e37', shadow:'rgba(111,78,55,0.18)' },
-            { icon:'🍳', count: inKitchenCount, label:'In Kitchen',       sub:'Chef is working on it',
+            { icon:<FaUtensils size={20} color="#fff" />, count: inKitchenCount, label:'In Kitchen',       sub:'Chef is working on it',
               accent:'#b45309', shadow:'rgba(180,83,9,0.18)' },
-            { icon:'🔔', count: readyCount,     label:'Ready to Deliver', sub:'Pick up now!',
+            { icon:<FaBell size={20} color="#fff" />, count: readyCount,     label:'Ready to Deliver', sub:'Pick up now!',
               accent:'#16a34a', shadow:'rgba(22,163,74,0.18)' },
-            { icon:'✅', count: deliveredCount, label:'Delivered',        sub:'Today\'s completed orders',
+            { icon:<FaCheckCircle size={20} color="#fff" />, count: deliveredCount, label:'Delivered',        sub:'Today\'s completed orders',
               accent:'#a67c52', shadow:'rgba(166,124,82,0.18)' },
           ].map((s, i) => (
             <div key={i} className="stat-card" style={{
@@ -139,7 +140,7 @@ export default function WaiterDashboard() {
               display:'flex', alignItems:'center', gap:16, textAlign:'left', padding:'20px 22px'
             }}>
               <div style={{ width:48, height:48, borderRadius:14, flexShrink:0,
-                background: `${s.accent}18`, display:'flex', alignItems:'center',
+                background: s.accent, display:'flex', alignItems:'center',
                 justifyContent:'center', fontSize:'1.4rem' }}>
                 {s.icon}
               </div>
@@ -160,11 +161,11 @@ export default function WaiterDashboard() {
           <div style={{ display:'flex', alignItems:'center', gap:0, overflowX:'auto', paddingBottom:2 }}
             className="hide-scrollbar">
             {[
-              { label:'Owner Confirms', icon:'👤', done:true, active:false },
-              { label:'Send to Kitchen', icon:'🍳', done: inKitchenCount>0||readyCount>0||deliveredCount>0, active: confirmedCount>0 },
-              { label:'Chef Prepares',  icon:'👨‍🍳', done: readyCount>0||deliveredCount>0, active: inKitchenCount>0 },
-              { label:'You Deliver',    icon:'🛎️', done: deliveredCount>0, active: readyCount>0 },
-              { label:'Done',           icon:'🎉', done: deliveredCount>0, active:false },
+              { label:'Owner Confirms', icon:<FaUser size={16} />, done:true, active:false },
+              { label:'Send to Kitchen', icon:<FaUtensils size={16} />, done: inKitchenCount>0||readyCount>0||deliveredCount>0, active: confirmedCount>0 },
+              { label:'Chef Prepares',  icon:<FaUtensils size={16} />, done: readyCount>0||deliveredCount>0, active: inKitchenCount>0 },
+              { label:'You Deliver',    icon:<FaConciergeBell size={16} />, done: deliveredCount>0, active: readyCount>0 },
+              { label:'Done',           icon:<FaFlagCheckered size={16} />, done: deliveredCount>0, active:false },
             ].map((s, i, arr) => (
               <React.Fragment key={i}>
                 <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6,
@@ -172,6 +173,7 @@ export default function WaiterDashboard() {
                   <div style={{
                     width:40, height:40, borderRadius:'50%', fontSize:'1rem',
                     display:'flex', alignItems:'center', justifyContent:'center',
+                    color: s.done || s.active ? '#fff' : '#8b6f63',
                     background: s.done ? '#6f4e37' : s.active ? '#a67c52' : '#f0ebe4',
                     border: s.active ? '2px solid #6f4e37' : s.done ? '2px solid #6f4e37' : '2px solid #d4c0a8',
                     boxShadow: s.active||s.done ? '0 3px 10px rgba(111,78,55,0.25)' : 'none',
@@ -215,7 +217,7 @@ export default function WaiterDashboard() {
         {/* ── ORDER CARDS ── */}
         {filtered.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state__icon">🍽️</div>
+            <div className="empty-state__icon">No Orders</div>
             <div className="empty-state__text">No orders here</div>
             <div className="empty-state__subtext">
               {filter === 'ALL' ? 'New confirmed orders will appear automatically.'
@@ -267,18 +269,18 @@ export default function WaiterDashboard() {
                     <div style={{ display:'flex', gap:7, flexWrap:'wrap' }}>
                       <span style={{ background:'#faf5ef', border:'1px solid #e2d5c8',
                         borderRadius:8, padding:'4px 10px', fontSize:'0.74rem', fontWeight:600, color:'#6f4e37' }}>
-                        {order.orderType === 'DINE_IN' ? '🍽️ Dine-In' : '🥡 Takeaway'}
+                        {order.orderType === 'DINE_IN' ? 'Dine-In' : 'Takeaway'}
                       </span>
                       {order.cafeTable && (
                         <span style={{ background:'#faf5ef', border:'1px solid #e2d5c8',
                           borderRadius:8, padding:'4px 10px', fontSize:'0.74rem', fontWeight:600, color:'#a67c52' }}>
-                          🪑 Table {order.cafeTable.tableNumber}
+                          Table {order.cafeTable.tableNumber}
                         </span>
                       )}
                       {order.orderItems?.length > 0 && (
                         <span style={{ background:'#faf5ef', border:'1px solid #e2d5c8',
                           borderRadius:8, padding:'4px 10px', fontSize:'0.74rem', fontWeight:600, color:'#8b6f63' }}>
-                          🛍️ {order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}
+                          {order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}
                         </span>
                       )}
                     </div>
@@ -322,21 +324,21 @@ export default function WaiterDashboard() {
                         onClick={() => sendToKitchen(order.id)}
                         style={{ width:'100%', padding:'12px', fontSize:'0.88rem', borderRadius:10,
                           display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-                        🍳 Send to Kitchen
+                        Send to Kitchen
                       </button>
                     )}
                     {order.status === 'SENT_TO_KITCHEN' && (
                       <div style={{ textAlign:'center', padding:'11px', borderRadius:10,
                         background:'#fff8f0', border:'1px solid #f5d9b0',
                         color:'#b45309', fontWeight:600, fontSize:'0.84rem' }}>
-                        ⏳ Waiting for chef to start…
+                        Waiting for chef...
                       </div>
                     )}
                     {order.status === 'PREPARING' && (
                       <div style={{ textAlign:'center', padding:'11px', borderRadius:10,
                         background:'#fff8f0', border:'1px solid #f5d9b0',
                         color:'#b45309', fontWeight:600, fontSize:'0.84rem' }}>
-                        🔥 Chef is preparing…
+                        Chef is preparing...
                       </div>
                     )}
                     {order.status === 'READY' && (
@@ -344,14 +346,14 @@ export default function WaiterDashboard() {
                         onClick={() => markDelivered(order.id)}
                         style={{ width:'100%', padding:'12px', fontSize:'0.88rem', borderRadius:10,
                           display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-                        🛎️ Mark as Delivered
+                        Mark as Delivered
                       </button>
                     )}
                     {order.status === 'DELIVERED' && (
                       <div style={{ textAlign:'center', padding:'11px', borderRadius:10,
                         background:'#f0fdf4', border:'1px solid #bbf7d0',
                         color:'#16a34a', fontWeight:600, fontSize:'0.84rem' }}>
-                        ✅ Successfully Delivered
+                        Delivered
                       </div>
                     )}
                   </div>

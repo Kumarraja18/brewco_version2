@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
+import VerifyEmail from './pages/auth/VerifyEmail';
 
 // Customer Pages
 import CustomerHome from './pages/CustomerHome';
@@ -34,6 +35,7 @@ import AdminDashboard from './pages/AdminDashboard';
 
 import { FaLinkedin, FaYoutube } from 'react-icons/fa';
 import { MdEmail, MdPhone } from 'react-icons/md';
+import BottomNav from './components/BottomNav';
 
 export default function App() {
   const { user, loading, logout } = useContext(AuthContext);
@@ -44,6 +46,15 @@ export default function App() {
   const isAdminRoute = location.pathname.startsWith('/admin-dashboard');
   // Full-screen routes without header/footer
   const isFullscreen = isAdminRoute;
+
+  const customerRoutes = [
+    '/customer-dashboard', '/cafes', '/review-order',
+    '/my-orders', '/my-bookings', '/profile', '/search'
+  ];
+  const isCustomerRoute = user?.role === 'CUSTOMER' &&
+    (customerRoutes.includes(location.pathname) ||
+     location.pathname.startsWith('/cafe/') ||
+     location.pathname.startsWith('/order-tracking/'));
 
   const handleLogout = async () => {
     await logout();
@@ -106,7 +117,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main className="containers">
+      <main className="containers" style={isCustomerRoute ? { paddingBottom: '75px' } : {}}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -114,6 +125,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
           {/* Customer Routes */}
           <Route path="/customer-dashboard" element={<ProtectedRoute requiredRole="CUSTOMER"><CustomerHome /></ProtectedRoute>} />
@@ -127,9 +139,8 @@ export default function App() {
           <Route path="/search" element={<ProtectedRoute requiredRole="CUSTOMER"><CafeList /></ProtectedRoute>} />
           <Route path="/profile-completion" element={<ProfileCompletion />} />
 
-          {/* Legacy routes (backward compat) */}
+          {/* Legacy redirect */}
           <Route path="/cafe-selection" element={<CafeList />} />
-          <Route path="/order-tracking" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderHistory /></ProtectedRoute>} />
 
           {/* Cafe Owner Routes */}
           <Route path="/cafe-setup" element={<ProtectedRoute requiredRole="CAFE_OWNER"><CafeSetup /></ProtectedRoute>} />
@@ -140,6 +151,8 @@ export default function App() {
           <Route path="/waiter-dashboard" element={<ProtectedRoute requiredRole="WAITER"><WaiterDashboard /></ProtectedRoute>} />
         </Routes>
       </main>
+
+      {isCustomerRoute && <BottomNav />}
 
       <Toaster position="top-right" />
 

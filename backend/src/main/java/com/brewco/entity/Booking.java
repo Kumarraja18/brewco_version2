@@ -2,6 +2,7 @@ package com.brewco.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -17,16 +18,19 @@ public class Booking {
     @Column(name = "booking_ref", unique = true, updatable = false)
     private String bookingRef;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cafe_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Cafe cafe;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "passwordHash"})
     private User customer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "table_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private CafeTable table;
 
     @Column(name = "booking_date", nullable = false)
@@ -37,6 +41,9 @@ public class Booking {
 
     @Column(name = "end_time")
     private LocalTime endTime;
+
+    @Column(name = "slot_duration")
+    private Integer slotDuration; // in minutes (60 or 120)
 
     @Column(name = "number_of_guests", nullable = false)
     private Integer numberOfGuests;
