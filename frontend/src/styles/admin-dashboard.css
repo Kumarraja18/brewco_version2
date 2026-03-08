@@ -886,6 +886,34 @@
   color: #fff;
 }
 
+/* ── STATUS BADGE (global — used by both Users and Cafes full tables) ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .2rem .65rem;
+  border-radius: 12px;
+  font-size: .72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge.pending {
+  background: #fef3e2;
+  color: #e67e22;
+}
+
+.status-badge.approved {
+  background: #eaf7ed;
+  color: #27ae60;
+}
+
+.status-badge.rejected {
+  background: #fce4ec;
+  color: #c0392b;
+}
+
+
 .admin-projects-table .action-btn.approve {
   background: #eaf7ed;
   color: #27ae60;

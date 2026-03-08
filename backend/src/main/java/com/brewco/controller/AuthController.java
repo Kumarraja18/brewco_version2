@@ -22,6 +22,7 @@ import com.brewco.service.RefreshTokenService;
 import com.brewco.repository.UserRepository;
 import com.brewco.dto.*;
 import com.brewco.security.JwtUtil;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Map;
 
 @RestController
@@ -42,6 +43,9 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping({ "/register", "/register/customer" })
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
@@ -226,6 +230,31 @@ public class AuthController {
         response.addCookie(refreshCookie);
 
         return ResponseEntity.ok(new AuthResponse(true, "Logged out successfully"));
+    }
+
+    /** PUT /api/auth/change-password — change password for authenticated user */
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request, Authentication authentication) {
+        try {
+            User currentUser = userRepository.findByEmail(authentication.getName()).orElseThrow();
+            String currentPassword = request.get("currentPassword");
+            String newPassword = request.get("newPassword");
+
+            if (currentPassword == null || newPassword == null || newPassword.length() < 6) {
+                return ResponseEntity.badRequest().body(new AuthResponse(false, "currentPassword and newPassword (min 6 chars) are required"));
+            }
+
+            String savedHash = currentUser.getPasswordHash() != null ? currentUser.getPasswordHash() : currentUser.getPassword();
+            if (savedHash == null || !passwordEncoder.matches(currentPassword, savedHash)) {
+                return ResponseEntity.badRequest().body(new AuthResponse(false, "Current password is incorrect"));
+            }
+
+            currentUser.setPasswordHash(passwordEncoder.encode(newPassword));
+            userRepository.save(currentUser);
+            return ResponseEntity.ok(new AuthResponse(true, "Password changed successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new AuthResponse(false, e.getMessage()));
+        }
     }
 
     @GetMapping("/user/{id}")

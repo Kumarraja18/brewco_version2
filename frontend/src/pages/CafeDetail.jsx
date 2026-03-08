@@ -229,12 +229,35 @@ export default function CafeDetail() {
                                 style={{
                                     background: bookingForm.tableId === table.id ? '#fff9f5' : '#fff',
                                     border: bookingForm.tableId === table.id ? '2px solid #ff5200' : '2px solid #f1f1f6',
-                                    borderRadius: '16px', padding: '20px', textAlign: 'center', cursor: 'pointer',
-                                    boxShadow: '0 2px 10px rgba(0,0,0,0.05)', transition: 'all 0.2s ease'
+                                    borderRadius: '16px', overflow: 'hidden', cursor: 'pointer',
+                                    boxShadow: bookingForm.tableId === table.id ? '0 4px 18px rgba(255,82,0,0.18)' : '0 2px 10px rgba(0,0,0,0.05)',
+                                    transition: 'all 0.2s ease'
                                 }}>
-                                <FaChair size={26} color={bookingForm.tableId === table.id ? '#ff5200' : '#c4c4cf'} />
-                                <div style={{fontWeight: 800, marginTop: '10px', color: '#1c1c1c'}}>Table {table.tableNumber}</div>
-                                <div style={{fontSize: '0.75rem', color: '#686b78', marginTop: '4px'}}>{table.tableType} • {table.capacity} Seats</div>
+                                {/* Table Image */}
+                                <div style={{height: '110px', overflow: 'hidden', position: 'relative'}}>
+                                    <img
+                                        src={table.imageUrl || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=250&fit=crop'}
+                                        alt={`Table ${table.tableNumber}`}
+                                        style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                                    />
+                                    {bookingForm.tableId === table.id && (
+                                        <div style={{position: 'absolute', top: '8px', right: '8px', background: '#ff5200', color: '#fff',
+                                            borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center',
+                                            justifyContent: 'center', fontSize: '0.85rem', fontWeight: 800}}>✓</div>
+                                    )}
+                                    <div style={{position: 'absolute', bottom: '6px', left: '8px', background: 'rgba(0,0,0,0.55)',
+                                        color: '#fff', fontSize: '0.68rem', fontWeight: 700, padding: '2px 7px', borderRadius: '6px',
+                                        textTransform: 'uppercase', letterSpacing: '0.5px'}}>
+                                        {table.tableType}
+                                    </div>
+                                </div>
+                                {/* Table Info */}
+                                <div style={{padding: '12px', textAlign: 'center'}}>
+                                    <div style={{fontWeight: 800, color: '#1c1c1c', fontSize: '0.95rem'}}>Table {table.tableNumber}</div>
+                                    <div style={{fontSize: '0.75rem', color: '#686b78', marginTop: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px'}}>
+                                        <FaChair size={10} /> {table.capacity} Seats
+                                    </div>
+                                </div>
                             </div>
                         ))}
                         {tables.filter(t => t.capacity >= bookingForm.guests && t.status === 'AVAILABLE').length === 0 && (

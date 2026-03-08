@@ -7,7 +7,7 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
         firstName: "", lastName: "", email: "", phone: "",
         dob: "", gender: "MALE", street: "", city: "",
         state: "", pincode: "", name: "", type: "VEG",
-        categoryId: "", price: "", isAvailable: true, 
+        categoryId: "", price: "", isAvailable: true,
         description: "", tableName: "", capacity: "2",
         tableType: "STANDARD", status: "AVAILABLE",
         displayOrder: "0", imageUrl: ""
@@ -20,8 +20,8 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
                 firstName: "", lastName: "", email: "", phone: "",
                 dob: "", gender: "MALE", street: "", city: "",
                 state: "", pincode: "", name: "", type: "VEG",
-                categoryId: categories[0]?.id?.toString() || "", 
-                price: "", isAvailable: true, 
+                categoryId: categories[0]?.id?.toString() || "",
+                price: "", isAvailable: true,
                 description: "", tableName: "", capacity: "2",
                 tableType: "STANDARD", status: "AVAILABLE",
                 displayOrder: "0", imageUrl: ""
@@ -42,12 +42,12 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         if (type === "menu" && !formData.categoryId) {
             toast.error("Please select a category first.");
             return;
         }
-        
+
         onSave(formData);
         onClose();
     };
@@ -79,7 +79,7 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
         alignItems: "center"
     };
 
-    const bodyStyle = { 
+    const bodyStyle = {
         padding: "1.5rem",
         overflowY: "auto",
         flex: 1
@@ -95,23 +95,23 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
     };
 
     const inputGroupStyle = { marginBottom: "1.25rem" };
-    const labelStyle = { 
-        display: "block", 
-        fontSize: "0.68rem", 
-        fontWeight: "700", 
-        color: "#8b6f63", 
+    const labelStyle = {
+        display: "block",
+        fontSize: "0.68rem",
+        fontWeight: "700",
+        color: "#8b6f63",
         marginBottom: "0.35rem",
         textTransform: "uppercase",
         letterSpacing: "0.5px"
     };
     const fieldStyle = {
-        width: "100%", 
-        padding: "0.65rem 0.85rem", 
-        borderRadius: "8px", 
+        width: "100%",
+        padding: "0.65rem 0.85rem",
+        borderRadius: "8px",
         border: "1px solid #d4c0a8",
-        fontSize: "0.88rem", 
-        outline: "none", 
-        background: "#fff", 
+        fontSize: "0.88rem",
+        outline: "none",
+        background: "#fff",
         color: "#2e241f",
         fontFamily: "'Inter', sans-serif"
     };
@@ -245,7 +245,7 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
                                     <label style={labelStyle}>Item Name</label>
                                     <input name="name" value={formData.name || ""} onChange={handleChange} style={fieldStyle} required />
                                 </div>
-                                
+
                                 <div style={gridStyle}>
                                     <div style={inputGroupStyle}>
                                         <label style={labelStyle}>Category</label>
@@ -257,9 +257,9 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
                                     <div style={inputGroupStyle}>
                                         <label style={labelStyle}>Type</label>
                                         <select name="type" value={formData.type || "VEG"} onChange={handleChange} style={fieldStyle}>
-                                            <option value="VEG">Veg</option>
-                                            <option value="NON_VEG">Non-Veg</option>
-                                            <option value="EGG">Contains Egg</option>
+                                            <option value="VEG">🟢 Veg</option>
+                                            <option value="NON_VEG">🔴 Non-Veg</option>
+                                            <option value="EGG">🟡 Contains Egg</option>
                                         </select>
                                     </div>
                                 </div>
@@ -271,12 +271,37 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
 
                                 <div style={inputGroupStyle}>
                                     <label style={labelStyle}>Description</label>
-                                    <textarea name="description" value={formData.description || ""} onChange={handleChange} style={{...fieldStyle, height: "70px", resize: "none"}} />
+                                    <textarea name="description" value={formData.description || ""} onChange={handleChange} style={{ ...fieldStyle, height: "70px", resize: "none" }} />
                                 </div>
 
-                                <div style={{...inputGroupStyle, display: "flex", alignItems: "center", gap: "10px", marginTop: "10px"}}>
-                                    <input type="checkbox" name="isAvailable" checked={formData.isAvailable} onChange={handleChange} id="avail-check" style={{width: "16px", height: "16px"}} />
-                                    <label htmlFor="avail-check" style={{...labelStyle, marginBottom: 0, cursor: "pointer", textTransform: 'none', fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>Available for order</label>
+                                {/* Image URL with live preview */}
+                                <div style={inputGroupStyle}>
+                                    <label style={labelStyle}>Image URL (optional)</label>
+                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                        <input
+                                            name="imageUrl"
+                                            value={formData.imageUrl || ""}
+                                            onChange={handleChange}
+                                            style={{ ...fieldStyle, flex: 1, marginBottom: 0 }}
+                                            placeholder="https://example.com/image.jpg"
+                                        />
+                                        {formData.imageUrl && (
+                                            <img
+                                                src={formData.imageUrl}
+                                                alt="preview"
+                                                onError={e => { e.target.style.display = 'none' }}
+                                                style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #d4c0a8', flexShrink: 0 }}
+                                            />
+                                        )}
+                                    </div>
+                                    <p style={{ margin: '5px 0 0', fontSize: '0.72rem', color: '#a67c52' }}>
+                                        Tip: Use any public image link (Unsplash, etc.) for best results.
+                                    </p>
+                                </div>
+
+                                <div style={{ ...inputGroupStyle, display: "flex", alignItems: "center", gap: "10px", marginTop: "10px" }}>
+                                    <input type="checkbox" name="isAvailable" checked={formData.isAvailable} onChange={handleChange} id="avail-check" style={{ width: "16px", height: "16px" }} />
+                                    <label htmlFor="avail-check" style={{ ...labelStyle, marginBottom: 0, cursor: "pointer", textTransform: 'none', fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>Available for order</label>
                                 </div>
                             </>
                         )}
@@ -304,15 +329,15 @@ function AddItemModal({ type, isOpen, onClose, onSave, menuItems, categories = [
                                     </div>
                                 </div>
 
-                                <div style={{...inputGroupStyle, display: "flex", alignItems: "center", gap: "10px", marginTop: "10px"}}>
-                                    <input 
-                                        type="checkbox" 
-                                        checked={formData.status === "AVAILABLE"} 
-                                        onChange={(e) => setFormData({...formData, status: e.target.checked ? "AVAILABLE" : "OCCUPIED"})}
+                                <div style={{ ...inputGroupStyle, display: "flex", alignItems: "center", gap: "10px", marginTop: "10px" }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.status === "AVAILABLE"}
+                                        onChange={(e) => setFormData({ ...formData, status: e.target.checked ? "AVAILABLE" : "OCCUPIED" })}
                                         id="table-avail"
-                                        style={{width: "16px", height: "16px"}}
+                                        style={{ width: "16px", height: "16px" }}
                                     />
-                                    <label htmlFor="table-avail" style={{...labelStyle, marginBottom: 0, cursor: "pointer", textTransform: 'none', fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>Ready for guests</label>
+                                    <label htmlFor="table-avail" style={{ ...labelStyle, marginBottom: 0, cursor: "pointer", textTransform: 'none', fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>Ready for guests</label>
                                 </div>
                             </>
                         )}

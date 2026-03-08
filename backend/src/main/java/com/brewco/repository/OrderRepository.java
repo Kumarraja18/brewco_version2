@@ -18,4 +18,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByCafeAndStatus(Cafe cafe, String status);
 
     List<Order> findByCafeAndCreatedAtBetween(Cafe cafe, LocalDateTime start, LocalDateTime end);
+
+    long countByStatusIn(List<String> statuses);
 }

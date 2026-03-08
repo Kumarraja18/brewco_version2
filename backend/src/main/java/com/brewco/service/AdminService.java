@@ -5,7 +5,9 @@ import com.brewco.entity.GovernmentProof;
 import com.brewco.entity.User;
 import com.brewco.entity.WorkExperience;
 import com.brewco.repository.AddressRepository;
+import com.brewco.repository.CafeTableRepository;
 import com.brewco.repository.GovernmentProofRepository;
+import com.brewco.repository.OrderRepository;
 import com.brewco.repository.UserRepository;
 import com.brewco.repository.WorkExperienceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,12 @@ public class AdminService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private CafeTableRepository cafeTableRepository;
+
     // Dashboard statistics
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
@@ -62,6 +70,17 @@ public class AdminService {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
         long recentRegistrations = userRepository.countByCreatedAtAfter(sevenDaysAgo);
         stats.put("recentRegistrations", recentRegistrations);
+
+        // Active orders across all cafes
+        java.util.List<String> activeStatuses = java.util.List.of("PLACED", "CONFIRMED", "SENT_TO_KITCHEN", "PREPARING", "READY");
+        long activeOrders = orderRepository.countByStatusIn(activeStatuses);
+        stats.put("activeOrders", activeOrders);
+
+        // Table occupancy across all cafes
+        long occupiedTables = cafeTableRepository.countByStatus("OCCUPIED");
+        long totalTables = cafeTableRepository.count();
+        stats.put("occupiedTables", occupiedTables);
+        stats.put("totalTables", totalTables);
 
         return stats;
     }

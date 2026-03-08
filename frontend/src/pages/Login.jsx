@@ -7,7 +7,6 @@ import '../styles/login.css'
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -19,12 +18,7 @@ export default function Login() {
     if (loading) return
 
     setError('')
-    
-    // Robust validation
-    if (!role) {
-      setError('Please select a role to login as')
-      return
-    }
+
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address')
       return
@@ -37,8 +31,7 @@ export default function Login() {
     setLoading(true)
 
     try {
-      // Role is sent to backend for cross-verification
-      const data = await login(email, password, role)
+      const data = await login(email, password)
 
       if (!data?.user) {
         throw new Error('Invalid server response: Missing user data')
@@ -113,27 +106,6 @@ export default function Login() {
                 )}
               </div>
             )}
-
-            <label className="login-form__field">
-              Login As
-              <select
-                className="login-form__input"
-                value={role}
-                onChange={(e) => {
-                  setRole(e.target.value)
-                  setError('')
-                }}
-                required
-                style={{ appearance: 'auto', paddingRight: '10px' }}
-              >
-                <option value="" disabled>Select Role</option>
-                <option value="CUSTOMER">Customer</option>
-                <option value="CAFE_OWNER">Cafe Owner</option>
-                <option value="CHEF">Chef</option>
-                <option value="WAITER">Waiter</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </label>
 
             <label className="login-form__field">
               Email

@@ -40,4 +40,7 @@ public class CafeTable {
 
     @Column(name = "qr_code")
     private String qrCode;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 }

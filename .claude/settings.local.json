@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mysql:*)",
+      "Bash(node:*)",
+      "Bash(python:*)",
+      "Bash(mvn compile:*)",
+      "Bash(npx vite:*)",
+      "Bash(claude mcp:*)"
+    ]
+  }
+}

@@ -56,6 +56,7 @@ public class ChefController {
     }
 
     @PutMapping("/orders/{orderId}/start")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> startPreparing(@PathVariable("orderId") Long orderId, Authentication authentication) {
         try {
             User chef = userRepository.findByEmail(authentication.getName()).orElseThrow();
@@ -74,6 +75,7 @@ public class ChefController {
     }
 
     @PutMapping("/orders/{orderId}/ready")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> markReady(@PathVariable("orderId") Long orderId, Authentication authentication) {
         try {
             User chef = userRepository.findByEmail(authentication.getName()).orElseThrow();
@@ -90,6 +92,7 @@ public class ChefController {
     }
 
     @PutMapping("/orders/{orderId}/status")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> updateOrderStatus(@PathVariable("orderId") Long orderId,
             @RequestBody Map<String, String> payload,
             Authentication authentication) {

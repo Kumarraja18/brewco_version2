@@ -47,21 +47,21 @@ public class CafeOwnerController {
 
     private Cafe getOwnedCafe(Long cafeId, Authentication auth) throws Exception {
         User user = getOwner(auth);
-        
+
         // If it's the owner, check findByIdAndOwner
         if ("CAFE_OWNER".equals(user.getRole())) {
             return cafeService.getCafeByIdAndOwner(cafeId, user)
                     .orElseThrow(() -> new Exception("Cafe not found or you are not the owner"));
         }
-        
+
         // If it's a staff member (CHEF/WAITER), check their assignment
         StaffAssignment assignment = staffService.getActiveAssignmentForStaff(user)
                 .orElseThrow(() -> new Exception("You are not assigned to any cafe"));
-        
+
         if (!assignment.getCafe().getId().equals(cafeId)) {
             throw new Exception("You are not authorized to access this cafe's data");
         }
-        
+
         return assignment.getCafe();
     }
 
@@ -78,33 +78,33 @@ public class CafeOwnerController {
     public ResponseEntity<?> createCafe(@RequestBody Map<String, Object> payload, Authentication auth) {
         try {
             User owner = getOwner(auth);
-            
+
             Cafe cafe = new Cafe();
             cafe.setOwner(owner);
             cafe.setName(payload.get("name") != null ? (String) payload.get("name") : "New Cafe");
             cafe.setDescription((String) payload.get("description"));
-            
+
             // Map address fields from setup wizard
             String street = (String) payload.get("street");
             String city = (String) payload.get("city");
             String state = (String) payload.get("state");
             String pincode = (String) payload.get("pincode");
-            
+
             cafe.setAddress(street != null ? street : "Unknown Street");
             cafe.setCity(city != null ? city : "Unknown City");
             cafe.setState(state);
             cafe.setZipCode(pincode);
-            
+
             cafe.setContactNumber((String) payload.get("contactNumber"));
             cafe.setEmail((String) payload.get("email"));
-            
+
             try {
                 if (payload.get("openingTime") != null) {
                     cafe.setOpeningTime(java.time.LocalTime.parse(payload.get("openingTime").toString()));
                 } else {
                     cafe.setOpeningTime(java.time.LocalTime.of(9, 0));
                 }
-                
+
                 if (payload.get("closingTime") != null) {
                     cafe.setClosingTime(java.time.LocalTime.parse(payload.get("closingTime").toString()));
                 } else {
@@ -114,7 +114,7 @@ public class CafeOwnerController {
                 cafe.setOpeningTime(java.time.LocalTime.of(9, 0));
                 cafe.setClosingTime(java.time.LocalTime.of(22, 0));
             }
-            
+
             cafe.setGstNumber((String) payload.get("gstNumber"));
             cafe.setFssaiLicense((String) payload.get("fssaiNumber"));
             cafe.setIsVerified(false);
@@ -149,7 +149,7 @@ public class CafeOwnerController {
             if (updatedCafe.getEmail() != null)
                 cafe.setEmail(updatedCafe.getEmail());
             if (updatedCafe.getOpeningTime() != null)
-            cafe.setOpeningTime(updatedCafe.getOpeningTime());
+                cafe.setOpeningTime(updatedCafe.getOpeningTime());
             if (updatedCafe.getClosingTime() != null)
                 cafe.setClosingTime(updatedCafe.getClosingTime());
             if (updatedCafe.getGstNumber() != null)
@@ -159,7 +159,7 @@ public class CafeOwnerController {
             if (updatedCafe.getFssaiLicense() != null)
                 cafe.setFssaiLicense(updatedCafe.getFssaiLicense());
             if (updatedCafe.getProfileImageUrl() != null)
-            cafe.setProfileImageUrl(updatedCafe.getProfileImageUrl());
+                cafe.setProfileImageUrl(updatedCafe.getProfileImageUrl());
 
             Cafe saved = cafeService.updateCafe(cafe);
             return ResponseEntity.ok(saved);
@@ -238,17 +238,19 @@ public class CafeOwnerController {
 
     @PostMapping("/cafes/{cafeId}/menu/categories")
     @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<?> createCategory(@PathVariable("cafeId") Long cafeId, @RequestBody Map<String, Object> payload,
+    public ResponseEntity<?> createCategory(@PathVariable("cafeId") Long cafeId,
+            @RequestBody Map<String, Object> payload,
             Authentication auth) {
         try {
             Cafe cafe = getOwnedCafe(cafeId, auth);
             MenuCategory category = new MenuCategory();
             category.setCafe(cafe);
             category.setName((String) payload.get("name"));
-            category.setDisplayOrder(payload.get("displayOrder") != null ? Integer.parseInt(payload.get("displayOrder").toString()) : 0);
+            category.setDisplayOrder(
+                    payload.get("displayOrder") != null ? Integer.parseInt(payload.get("displayOrder").toString()) : 0);
             category.setIsActive(payload.get("isActive") != null ? (Boolean) payload.get("isActive") : true);
             category.setDescription((String) payload.get("description"));
-            
+
             return ResponseEntity.ok(menuService.createCategory(category));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -302,17 +304,18 @@ public class CafeOwnerController {
 
     @PostMapping("/cafes/{cafeId}/menu/items")
     @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<?> createMenuItem(@PathVariable("cafeId") Long cafeId, @RequestBody Map<String, Object> payload,
+    public ResponseEntity<?> createMenuItem(@PathVariable("cafeId") Long cafeId,
+            @RequestBody Map<String, Object> payload,
             Authentication auth) {
         try {
             Cafe cafe = getOwnedCafe(cafeId, auth);
-            
+
             MenuItem item = new MenuItem();
             item.setCafe(cafe);
             item.setName((String) payload.get("name"));
             item.setDescription((String) payload.get("description"));
             item.setType((String) payload.get("type"));
-            
+
             if (payload.get("price") != null) {
                 item.setPrice(new BigDecimal(payload.get("price").toString()));
             } else {
@@ -321,10 +324,12 @@ public class CafeOwnerController {
 
             if (payload.get("categoryId") != null) {
                 Long catId = Long.valueOf(payload.get("categoryId").toString());
-                item.setCategory(menuService.getCategoryById(catId).orElseThrow(() -> new Exception("Category not found")));
-            } else if (payload.get("category") != null && ((Map)payload.get("category")).get("id") != null) {
-                Long catId = Long.valueOf(((Map)payload.get("category")).get("id").toString());
-                item.setCategory(menuService.getCategoryById(catId).orElseThrow(() -> new Exception("Category not found")));
+                item.setCategory(
+                        menuService.getCategoryById(catId).orElseThrow(() -> new Exception("Category not found")));
+            } else if (payload.get("category") != null && ((Map) payload.get("category")).get("id") != null) {
+                Long catId = Long.valueOf(((Map) payload.get("category")).get("id").toString());
+                item.setCategory(
+                        menuService.getCategoryById(catId).orElseThrow(() -> new Exception("Category not found")));
             }
 
             item.setIsAvailable(payload.get("isAvailable") != null ? (Boolean) payload.get("isAvailable") : true);
@@ -585,26 +590,37 @@ public class CafeOwnerController {
 
     @PostMapping("/cafes/{cafeId}/bookings")
     @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<?> createBooking(@PathVariable("cafeId") Long cafeId, @RequestBody Map<String, Object> payload,
+    public ResponseEntity<?> createBooking(@PathVariable("cafeId") Long cafeId,
+            @RequestBody Map<String, Object> payload,
             Authentication auth) {
         try {
             Cafe cafe = getOwnedCafe(cafeId, auth);
+            User owner = getOwner(auth);
+
             Booking booking = new Booking();
             booking.setCafe(cafe);
-            booking.setCustomerName((String) payload.get("customerName"));
-            booking.setCustomerEmail((String) payload.get("customerEmail"));
-            booking.setCustomerPhone((String) payload.get("customerPhone"));
-            
+
+            // Booking entity uses a User FK for customer (nullable=false).
+            // For walk-in / owner-created bookings we store guest info in specialRequests
+            // and use the owner as the placeholder customer record.
+            String customerName = (String) payload.getOrDefault("customerName", "Walk-in Guest");
+            String customerEmail = (String) payload.getOrDefault("customerEmail", "");
+            String customerPhone = (String) payload.getOrDefault("customerPhone", "");
+            String guestNote = String.format("Guest: %s | Email: %s | Phone: %s", customerName, customerEmail,
+                    customerPhone);
+            booking.setCustomer(owner); // owner as placeholder – required by NOT NULL constraint
+            booking.setSpecialRequests(guestNote);
+
             if (payload.get("bookingDate") != null) {
                 booking.setBookingDate(java.time.LocalDate.parse(payload.get("bookingDate").toString()));
             }
             if (payload.get("startTime") != null) {
                 booking.setStartTime(java.time.LocalTime.parse(payload.get("startTime").toString()));
             }
-            
+
             booking.setNumberOfGuests(Integer.parseInt(payload.get("numberOfGuests").toString()));
             booking.setStatus(payload.get("status") != null ? (String) payload.get("status") : "PENDING");
-            
+
             // Generate a unique reference
             booking.setBookingRef("BKG-" + System.currentTimeMillis() % 1000000);
 

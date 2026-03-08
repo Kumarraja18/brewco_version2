@@ -110,6 +110,12 @@ public class AdminController {
 
     // --- Cafe Management ---
 
+    @GetMapping("/cafes/all")
+    public ResponseEntity<?> getAllCafes() {
+        List<Cafe> allCafes = cafeRepository.findAll();
+        return ResponseEntity.ok(allCafes);
+    }
+
     @GetMapping("/cafes/pending")
     public ResponseEntity<?> getPendingCafes() {
         List<Cafe> pendingCafes = cafeRepository.findAll().stream()

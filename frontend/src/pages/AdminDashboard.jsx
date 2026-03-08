@@ -9,9 +9,10 @@ import {
   rejectUser,
   deactivateUser,
   activateUser,
-  getPendingCafes,
+  getAllCafes,
   verifyCafe,
-  rejectCafeApp
+  rejectCafeApp,
+  deleteCafe
 } from '../api'
 import '../styles/admin-dashboard.css'
 import { AuthContext } from '../context/AuthContext'
@@ -51,7 +52,7 @@ export default function AdminDashboard({ user }) {
   const [stats, setStats] = useState(null)
   const [pendingUsers, setPendingUsers] = useState([])
   const [allUsers, setAllUsersState] = useState([])
-  const [pendingCafes, setPendingCafes] = useState([])
+  const [allCafes, setAllCafes] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Clock
@@ -76,12 +77,12 @@ export default function AdminDashboard({ user }) {
         getAdminDashboardStats(),
         getPendingUsers(),
         getAllUsers(),
-        getPendingCafes()
+        getAllCafes()
       ])
       setStats(s)
       setPendingUsers(p)
       setAllUsersState(a)
-      setPendingCafes(c || [])
+      setAllCafes(c || [])
     } catch (err) {
       console.error('Dashboard load error:', err)
       showToast('error', 'Load Error', err.message)
@@ -243,8 +244,8 @@ export default function AdminDashboard({ user }) {
             onClick={() => setActiveNav('cafes')}
           >
             <span className="nav-icon">🏪</span> Cafes
-            {pendingCafes.length > 0 && (
-              <span className="nav-badge">{pendingCafes.length}</span>
+            {allCafes.filter(c => !c.isVerified && c.isActive).length > 0 && (
+              <span className="nav-badge">{allCafes.filter(c => !c.isVerified && c.isActive).length}</span>
             )}
           </button>
 
@@ -305,9 +306,18 @@ export default function AdminDashboard({ user }) {
             />
           ) : (
             <CafesView
-              pendingCafes={pendingCafes}
+              allCafes={allCafes}
               onVerify={handleVerifyCafe}
               onReject={handleRejectCafe}
+              onDelete={async (cafeId) => {
+                try {
+                  await deleteCafe(cafeId)
+                  showToast('success', 'Cafe Deleted', 'Cafe has been permanently deleted.')
+                  loadDashboard()
+                } catch (err) {
+                  showToast('error', 'Delete Failed', err.message)
+                }
+              }}
             />
           )}
         </div>
@@ -472,6 +482,22 @@ function DashboardView({ stats, pendingUsers, now, bars, allUsers, onView, onApp
           <div className="stat-sublabel">On your platform</div>
           <div className="stat-value">{stats?.activeUsers || 0}</div>
           <div className="stat-icon">👤</div>
+        </div>
+
+        <div className="admin-stat-card">
+          <div className="stat-label">Active Orders</div>
+          <div className="stat-sublabel">Across all cafés right now</div>
+          <div className="stat-value" style={{ color: stats?.activeOrders > 0 ? '#27ae60' : '#2e241f' }}>
+            {stats?.activeOrders || 0}
+          </div>
+          <div className="stat-icon">☕</div>
+        </div>
+
+        <div className="admin-stat-card">
+          <div className="stat-label">Occupied Tables</div>
+          <div className="stat-sublabel">{stats?.occupiedTables || 0} of {stats?.totalTables || 0} tables</div>
+          <div className="stat-value">{stats?.occupiedTables || 0}</div>
+          <div className="stat-icon">🪑</div>
         </div>
 
         <div className="admin-stat-card clock">
@@ -759,68 +785,147 @@ function UsersView({ allUsers, onView, onActivate, onDeactivate }) {
 // ══════════════════════════════════
 //  CAFES VIEW
 // ══════════════════════════════════
-function CafesView({ pendingCafes, onVerify, onReject }) {
+function CafesView({ allCafes, onVerify, onReject, onDelete }) {
+  const [filter, setFilter] = useState('all')
+
+  const filtered = allCafes.filter(cafe => {
+    if (filter === 'all') return true
+    if (filter === 'pending') return !cafe.isVerified && cafe.isActive
+    if (filter === 'verified') return cafe.isVerified
+    if (filter === 'rejected') return !cafe.isVerified && !cafe.isActive
+    return true
+  })
+
+  const pendingCount = allCafes.filter(c => !c.isVerified && c.isActive).length
+  const verifiedCount = allCafes.filter(c => c.isVerified).length
+  const rejectedCount = allCafes.filter(c => !c.isVerified && !c.isActive).length
+
+  const getCafeStatus = (cafe) => {
+    if (cafe.isVerified) return { label: '● Verified', cls: 'approved' }
+    if (!cafe.isActive) return { label: '✕ Rejected', cls: 'rejected' }
+    return { label: '○ Pending', cls: 'pending' }
+  }
+
   return (
     <div className="admin-users-table-wrapper">
       <div className="admin-users-table-head">
-        <h3>Pending Cafes ({pendingCafes.length})</h3>
+        <h3>All Cafes ({filtered.length})</h3>
+        <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+          {[
+            { key: 'all', label: `All (${allCafes.length})` },
+            { key: 'pending', label: `Pending (${pendingCount})` },
+            { key: 'verified', label: `Verified (${verifiedCount})` },
+            { key: 'rejected', label: `Rejected (${rejectedCount})` },
+          ].map(f => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              style={{
+                padding: '.3rem .7rem',
+                borderRadius: '6px',
+                border: filter === f.key ? '2px solid #6f4e37' : '1px solid #d4c0a8',
+                background: filter === f.key ? '#6f4e37' : '#fff',
+                color: filter === f.key ? '#f5e9dc' : '#6f4e37',
+                fontSize: '.75rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
-      {pendingCafes.length === 0 ? (
+
+      {filtered.length === 0 ? (
         <div className="admin-no-data">
           <div className="no-data-icon">🏪</div>
-          <p>No pending cafes to review.</p>
+          <p>No cafes found for this filter.</p>
         </div>
       ) : (
         <table className="admin-full-table">
           <thead>
             <tr>
               <th>Cafe Name</th>
-              <th>Owner Details</th>
+              <th>Owner</th>
               <th>Location</th>
               <th>GST / FSSAI</th>
+              <th>Hours</th>
+              <th>Status</th>
               <th>Reg Date</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {pendingCafes.map(cafe => (
-              <tr key={cafe.id}>
-                <td>
-                  <div className="user-cell">
-                    <div className="cell-avatar">{cafe.name ? cafe.name[0].toUpperCase() : 'C'}</div>
-                    <div className="cell-info">
-                      <h5>{cafe.name}</h5>
-                      <p>{cafe.email}</p>
+            {filtered.map(cafe => {
+              const status = getCafeStatus(cafe)
+              return (
+                <tr key={cafe.id}>
+                  <td>
+                    <div className="user-cell">
+                      <div className="cell-avatar" style={{ background: cafe.isVerified ? '#27ae60' : !cafe.isActive ? '#c0392b' : '#e67e22' }}>
+                        {cafe.name ? cafe.name[0].toUpperCase() : 'C'}
+                      </div>
+                      <div className="cell-info">
+                        <h5>{cafe.name}</h5>
+                        <p style={{ fontSize: '0.72rem', color: '#9ca3af' }}>ID #{cafe.id}</p>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td>
-                  <div className="cell-info">
-                    <h5>{cafe.owner?.firstName} {cafe.owner?.lastName}</h5>
-                    <p>{cafe.contactNumber}</p>
-                  </div>
-                </td>
-                <td>
-                  <div className="cell-info">
-                    <h5>{cafe.city}, {cafe.state}</h5>
-                    <p>{cafe.zipCode}</p>
-                  </div>
-                </td>
-                <td>
-                  <div className="cell-info">
-                    <h5>GST: {cafe.gstNumber || 'N/A'}</h5>
-                    <p>FSSAI: {cafe.fssaiLicense || 'N/A'}</p>
-                  </div>
-                </td>
-                <td>{formatDate(cafe.createdAt)}</td>
-                <td>
-                  <div className="action-btns">
-                    <button className="action-btn approve" onClick={() => onVerify(cafe.id)}>Verify</button>
-                    <button className="action-btn reject" onClick={() => onReject(cafe.id)}>Reject</button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td>
+                    <div className="cell-info">
+                      <h5>{cafe.owner?.firstName} {cafe.owner?.lastName}</h5>
+                      <p>{cafe.contactNumber}</p>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="cell-info">
+                      <h5>{cafe.city}, {cafe.state}</h5>
+                      <p>{cafe.zipCode}</p>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="cell-info">
+                      <h5>GST: {cafe.gstNumber || 'N/A'}</h5>
+                      <p>FSSAI: {cafe.fssaiLicense || 'N/A'}</p>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="cell-info">
+                      <h5>{cafe.openingTime || '—'} – {cafe.closingTime || '—'}</h5>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`status-badge ${status.cls}`}>
+                      {status.label}
+                    </span>
+                  </td>
+                  <td>{formatDate(cafe.createdAt)}</td>
+                  <td>
+                    <div className="action-btns">
+                      {!cafe.isVerified && cafe.isActive && (
+                        <button className="action-btn approve" onClick={() => onVerify(cafe.id)}>Verify</button>
+                      )}
+                      {cafe.isVerified && (
+                        <button className="action-btn reject" onClick={() => onReject(cafe.id)}>Revoke</button>
+                      )}
+                      {!cafe.isVerified && !cafe.isActive && (
+                        <button className="action-btn approve" onClick={() => onVerify(cafe.id)}>Re-verify</button>
+                      )}
+                      <button
+                        className="action-btn reject"
+                        style={{ background: '#fee2e2', color: '#b91c1c', border: '1px solid #fecaca' }}
+                        onClick={() => {
+                          if (window.confirm(`Permanently delete "${cafe.name}"? This cannot be undone.`)) {
+                            onDelete(cafe.id)
+                          }
+                        }}
+                      >Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}

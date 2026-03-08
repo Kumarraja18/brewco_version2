@@ -68,6 +68,7 @@ public class WaiterController {
     }
 
     @PutMapping("/orders/{orderId}/send-to-kitchen")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> sendToKitchen(@PathVariable("orderId") Long orderId, Authentication authentication) {
         try {
             User waiter = getWaiter(authentication);
@@ -86,6 +87,7 @@ public class WaiterController {
     }
 
     @PutMapping("/orders/{orderId}/deliver")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> markDelivered(@PathVariable("orderId") Long orderId, Authentication authentication) {
         try {
             User waiter = getWaiter(authentication);
@@ -102,6 +104,7 @@ public class WaiterController {
     }
 
     @PutMapping("/orders/{orderId}/status")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> updateOrderStatus(@PathVariable("orderId") Long orderId,
             @RequestBody Map<String, String> payload,
             Authentication authentication) {

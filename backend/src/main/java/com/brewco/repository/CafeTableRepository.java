@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface CafeTableRepository extends JpaRepository<CafeTable, Long> {
     List<CafeTable> findByCafe(Cafe cafe);
+
+    long countByStatus(String status);
 }
