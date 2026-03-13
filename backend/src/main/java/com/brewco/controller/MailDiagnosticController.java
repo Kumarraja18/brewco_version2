@@ -1,46 +1,33 @@
 package com.brewco.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/debug")
-@CrossOrigin(origins = "http://localhost:5173")
 public class MailDiagnosticController {
 
-    @Autowired(required = false)
-    private JavaMailSender mailSender;
+    @Value("${resend.api-key:}")
+    private String resendApiKey;
 
-    @Value("${spring.mail.username:NOT_SET}")
-    private String mailUsername;
+    @Value("${resend.from:onboarding@resend.dev}")
+    private String fromEmail;
 
-    @Value("${spring.mail.password:NOT_SET}")
-    private String mailPassword;
-
-    @Value("${spring.mail.host:NOT_SET}")
-    private String mailHost;
-
-    @Value("${spring.mail.port:0}")
-    private int mailPort;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @GetMapping("/mail-config")
     public ResponseEntity<?> getMailConfig() {
         Map<String, Object> config = new LinkedHashMap<>();
-        config.put("mailSenderAvailable", mailSender != null);
-        config.put("mailHost", mailHost);
-        config.put("mailPort", mailPort);
-        config.put("mailUsername", mailUsername);
-        config.put("mailPasswordSet",
-                mailPassword != null && !mailPassword.isBlank() && !"NOT_SET".equals(mailPassword));
-        config.put("mailPasswordLength", mailPassword != null ? mailPassword.length() : 0);
-        config.put("mailSenderClass", mailSender != null ? mailSender.getClass().getName() : "null");
+        config.put("provider", "Resend");
+        config.put("configured", resendApiKey != null && !resendApiKey.isBlank());
+        config.put("from", fromEmail);
+        config.put("apiKeySet", resendApiKey != null && !resendApiKey.isBlank());
         return ResponseEntity.ok(config);
     }
 
@@ -48,43 +35,36 @@ public class MailDiagnosticController {
     public ResponseEntity<?> testEmail(@RequestParam String to) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("to", to);
-        result.put("from", mailUsername);
+        result.put("from", fromEmail);
 
-        if (mailSender == null) {
+        if (resendApiKey == null || resendApiKey.isBlank()) {
             result.put("status", "FAILED");
-            result.put("error", "JavaMailSender bean is NULL");
-            return ResponseEntity.ok(result);
-        }
-
-        if (mailUsername == null || mailUsername.isBlank() || "NOT_SET".equals(mailUsername)) {
-            result.put("status", "FAILED");
-            result.put("error", "MAIL_USERNAME is not configured");
+            result.put("error", "RESEND_API_KEY is not configured");
             return ResponseEntity.ok(result);
         }
 
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(mailUsername);
-            message.setTo(to);
-            message.setSubject("☕ Brew & Co — Test Email");
-            message.setText("If you receive this, email is working!\n\nSent at: " + java.time.LocalDateTime.now());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(resendApiKey);
 
-            mailSender.send(message);
+            Map<String, Object> body = Map.of(
+                    "from", fromEmail,
+                    "to", List.of(to),
+                    "subject", "☕ Brew & Co — Test Email",
+                    "html", "<p>If you receive this, Resend email is working! Sent at: " + java.time.LocalDateTime.now() + "</p>"
+            );
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            ResponseEntity<String> resp = restTemplate.postForEntity(
+                    "https://api.resend.com/emails", request, String.class);
 
             result.put("status", "SUCCESS");
             result.put("message", "Email sent! Check inbox of: " + to);
+            result.put("response", resp.getBody());
         } catch (Exception e) {
             result.put("status", "FAILED");
             result.put("error", e.getMessage());
-            result.put("errorType", e.getClass().getName());
-
-            // Check for common issues
-            if (e.getMessage() != null && e.getMessage().contains("AuthenticationFailedException")) {
-                result.put("hint",
-                        "Gmail credentials are wrong. Generate a new App Password at https://myaccount.google.com/apppasswords");
-            } else if (e.getMessage() != null && e.getMessage().contains("ConnectException")) {
-                result.put("hint", "Cannot reach SMTP server. Check firewall/internet.");
-            }
         }
 
         return ResponseEntity.ok(result);

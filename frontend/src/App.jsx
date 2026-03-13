@@ -44,8 +44,10 @@ export default function App() {
 
   // Check if we are on the admin dashboard route
   const isAdminRoute = location.pathname.startsWith('/admin-dashboard');
+  // Cafe owner routes with their own full-page layouts
+  const isCafeOwnerRoute = location.pathname === '/cafe-setup' || location.pathname === '/cafe-owner-dashboard';
   // Full-screen routes without header/footer
-  const isFullscreen = isAdminRoute;
+  const isFullscreen = isAdminRoute || isCafeOwnerRoute;
 
   const customerRoutes = [
     '/customer-dashboard', '/cafes', '/review-order',
@@ -80,17 +82,20 @@ export default function App() {
 
   if (loading) return <div>Loading Application...</div>;
 
-  // If admin dashboard, render without the main app wrapper layout
+  // If fullscreen route, render without the main app wrapper layout
   if (isFullscreen) {
     return (
       <Routes>
         <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard user={user} /></ProtectedRoute>} />
+        <Route path="/cafe-setup" element={<ProtectedRoute requiredRole="CAFE_OWNER"><CafeSetup /></ProtectedRoute>} />
+        <Route path="/cafe-owner-dashboard" element={<ProtectedRoute requiredRole="CAFE_OWNER"><CafeOwnerDashboard /></ProtectedRoute>} />
       </Routes>
     );
   }
 
   return (
     <div className="app">
+      <Toaster position="top-center" reverseOrder={false} />
       <header className="header">
         <div style={{ display: 'flex' }}>
           <img src="/logo.png" alt="logo" className="app-logo" />

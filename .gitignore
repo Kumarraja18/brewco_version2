@@ -91,3 +91,4 @@ tmp/
 # Gemini
 .gemini/
 .aider*
+.vercel

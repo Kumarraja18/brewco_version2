@@ -128,9 +128,9 @@ export default function CafeSetup() {
 
     /* ── Section label in review ── */
     const ReviewRow = ({ label, value }) => (
-        <div style={{ display: 'flex', gap: '12px', padding: '8px 0', borderBottom: `1px solid ${C.border}` }}>
-            <span style={{ width: '160px', flexShrink: 0, fontWeight: 700, fontSize: '0.82rem', color: C.muted }}>{label}</span>
-            <span style={{ fontSize: '0.9rem', color: C.dark }}>{value || '—'}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', padding: '8px 0', borderBottom: `1px solid ${C.border}` }}>
+            <span style={{ fontWeight: 700, fontSize: '0.75rem', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</span>
+            <span style={{ fontSize: '0.88rem', color: C.dark, overflowWrap: 'break-word', wordBreak: 'break-word' }}>{value || '—'}</span>
         </div>
     )
 
@@ -192,7 +192,7 @@ export default function CafeSetup() {
                 </div>
 
                 {/* ── Card ── */}
-                <div style={{ background: C.white, borderRadius: '18px', boxShadow: '0 4px 24px rgba(42,30,24,.10)', border: `1px solid ${C.border}`, padding: '32px 36px' }}>
+                <div style={{ background: C.white, borderRadius: '18px', boxShadow: '0 4px 24px rgba(42,30,24,.10)', border: `1px solid ${C.border}`, padding: '32px 36px', overflow: 'hidden' }}>
 
                     {/* ─── STEP 1: Basic Info ─── */}
                     {step === 1 && (
@@ -271,31 +271,51 @@ export default function CafeSetup() {
                     {step === 6 && (
                         <>
                             <SectionHead icon="📋" title="Review Your Application" sub="Check everything before submitting" />
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '20px', border: `1px solid ${C.border}` }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '16px', border: `1px solid ${C.border}`, minWidth: 0, overflow: 'hidden' }}>
                                     <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: '0.82rem', color: C.brown, textTransform: 'uppercase' }}>Basic Info</p>
                                     <ReviewRow label="Café Name" value={formData.name} />
                                     <ReviewRow label="Contact" value={formData.contactNumber} />
                                     <ReviewRow label="Email" value={formData.email} />
                                     <ReviewRow label="Hours" value={`${formData.openingTime} – ${formData.closingTime}`} />
                                 </div>
-                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '20px', border: `1px solid ${C.border}` }}>
+                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '16px', border: `1px solid ${C.border}`, minWidth: 0, overflow: 'hidden' }}>
                                     <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: '0.82rem', color: C.brown, textTransform: 'uppercase' }}>Location</p>
                                     <ReviewRow label="Street" value={formData.street} />
                                     <ReviewRow label="City" value={`${formData.city}, ${formData.state}`} />
                                     <ReviewRow label="Pincode" value={formData.pincode} />
                                 </div>
-                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '20px', border: `1px solid ${C.border}` }}>
+                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '16px', border: `1px solid ${C.border}`, minWidth: 0, overflow: 'hidden' }}>
                                     <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: '0.82rem', color: C.brown, textTransform: 'uppercase' }}>Business</p>
                                     <ReviewRow label="Type" value={formData.businessType} />
                                     <ReviewRow label="FSSAI" value={formData.fssaiNumber} />
                                     <ReviewRow label="GST" value={formData.gstNumber} />
                                 </div>
-                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '20px', border: `1px solid ${C.border}` }}>
+                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '16px', border: `1px solid ${C.border}`, minWidth: 0, overflow: 'hidden' }}>
                                     <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: '0.82rem', color: C.brown, textTransform: 'uppercase' }}>Status</p>
                                     <ReviewRow label="Submitted" value={new Date().toLocaleDateString('en-IN')} />
                                     <ReviewRow label="Status" value="Pending Review" />
                                     <ReviewRow label="Verified" value="No — pending admin approval" />
+                                </div>
+                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '16px', border: `1px solid ${C.border}`, minWidth: 0, overflow: 'hidden' }}>
+                                    <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: '0.82rem', color: C.brown, textTransform: 'uppercase' }}>Bank Details</p>
+                                    <ReviewRow label="Account Holder" value={formData.accountHolderName} />
+                                    <ReviewRow label="Account No." value={formData.accountNumber} />
+                                    <ReviewRow label="IFSC" value={formData.ifscCode} />
+                                    <ReviewRow label="UPI ID" value={formData.upiId} />
+                                </div>
+                                <div style={{ background: '#faf8f5', borderRadius: '12px', padding: '16px', border: `1px solid ${C.border}`, minWidth: 0, overflow: 'hidden' }}>
+                                    <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: '0.82rem', color: C.brown, textTransform: 'uppercase' }}>Services & Facilities</p>
+                                    <ReviewRow label="Total Tables" value={formData.totalTables} />
+                                    <ReviewRow label="Seating Capacity" value={formData.seatingCapacity} />
+                                    <ReviewRow label="Amenities" value={[
+                                        formData.parkingAvailable && 'Parking',
+                                        formData.freeWifi && 'Free WiFi',
+                                        formData.airConditioned && 'AC',
+                                        formData.homeDelivery && 'Home Delivery',
+                                        formData.takeaway && 'Takeaway',
+                                        formData.dineIn && 'Dine In',
+                                    ].filter(Boolean).join(', ') || 'None selected'} />
                                 </div>
                             </div>
                             <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: '10px', padding: '14px 18px', fontSize: '0.85rem', color: '#92400e', fontWeight: 500 }}>
@@ -363,7 +383,7 @@ export default function CafeSetup() {
                                     transition: 'all 0.2s',
                                 }}
                             >
-                                Next →
+                                {step === 6 ? 'Continue to Photos →' : 'Next →'}
                             </button>
                         ) : (
                             <button

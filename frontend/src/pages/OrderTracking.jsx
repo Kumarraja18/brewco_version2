@@ -154,8 +154,24 @@ export default function OrderTracking() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', fontSize: '0.85rem', color: '#686b78' }}>
             <div>Order Type:</div>
             <div style={{ fontWeight: 700, color: '#1c1c1c' }}>{order.orderType}</div>
-            <div>Payment:</div>
-            <div style={{ fontWeight: 700, color: '#1c1c1c' }}>{order.paymentStatus}</div>
+            <div>Payment Status:</div>
+            <div>
+              <span style={{
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '0.75rem',
+                fontWeight: 800,
+                background: order.paymentStatus === 'COMPLETED' ? '#dcfce7' : 
+                            order.paymentStatus === 'FAILED' ? '#fee2e2' : '#fef3c7',
+                color: order.paymentStatus === 'COMPLETED' ? '#15803d' : 
+                       order.paymentStatus === 'FAILED' ? '#dc2626' : '#92400e',
+                border: `1px solid ${order.paymentStatus === 'COMPLETED' ? '#bbf7d0' : 
+                                     order.paymentStatus === 'FAILED' ? '#fecaca' : '#fde68a'}`
+              }}>
+                {order.paymentStatus === 'COMPLETED' ? 'PAID ✓' : 
+                 order.paymentStatus === 'FAILED' ? 'PAYMENT FAILED' : 'PAYMENT PENDING'}
+              </span>
+            </div>
             {order.table && (
               <>
                 <div>Table:</div>
